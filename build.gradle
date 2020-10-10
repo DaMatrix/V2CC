@@ -30,7 +30,7 @@ ext {
     //dependency things
     junitVersion = "4.12"
     lombokVersion = "1.16.20"
-    mcprotocollibVersion = "1.12.2-toobeetooteebot-SNAPSHOT"
+    mcprotocollibVersion = "1.12.2-v2cc-SNAPSHOT"
     porklibVersion = "0.5.5-SNAPSHOT"
 }
 
@@ -58,6 +58,7 @@ configurations {
 }
 
 dependencies {
+    shade "net.daporkchop.lib:config:$porklibVersion"
     shade "net.daporkchop.lib:logging:$porklibVersion"
 
     shade "com.github.steveice10:mcprotocollib:$mcprotocollibVersion"
@@ -85,6 +86,6 @@ jar {
     manifest {
         attributes "Implementation-Title": "DaPorkchop_",
                 "Implementation-Version": version,
-                "Main-Class": "net.daporkchop.v2cc.Main"
+                "Main-Class": "net.daporkchop.v2cc.Proxy"
     }
 }

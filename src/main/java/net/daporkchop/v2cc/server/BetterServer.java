@@ -18,44 +18,36 @@
  *
  */
 
-package net.daporkchop.v2cc.util;
+package net.daporkchop.v2cc.server;
 
-import lombok.experimental.UtilityClass;
-import net.daporkchop.lib.common.misc.file.PFiles;
-import net.daporkchop.lib.config.PConfig;
-import net.daporkchop.lib.config.decoder.PorkConfigDecoder;
-import net.daporkchop.lib.logging.Logger;
-import net.daporkchop.lib.logging.Logging;
-
-import java.io.File;
-import java.io.IOException;
+import com.github.steveice10.packetlib.Server;
+import com.github.steveice10.packetlib.packet.PacketProtocol;
+import lombok.Getter;
+import lombok.NonNull;
+import net.daporkchop.v2cc.Proxy;
 
 /**
+ * Extension of {@link Server} which allows me to pass a {@link Proxy} to the {@link PacketProtocol} constructor.
+ *
  * @author DaPorkchop_
  */
-@UtilityClass
-public class Constants {
-    public static final String VERSION = "0.0.1a";
+@Getter
+public class BetterServer extends Server {
+    protected final Proxy proxy;
 
-    public static final Logger LOG = Logging.logger.redirectStdOut().enableANSI();
+    public BetterServer(String host, int port, @NonNull Proxy proxy) {
+        super(host, port, null, proxy.sessionFactory());
 
-    public static final Conf CONFIG;
-
-    static {
-        PConfig configManager = new PConfig(new PorkConfigDecoder());
-        try {
-            LOG.info("Loading config...");
-            File configFile = new File("v2cc.cfg");
-            if (PFiles.checkFileExists(configFile)) {
-                CONFIG = configManager.load(Conf.class, new File("v2cc.cfg"));
-            } else { //config file doesn't exist, fall back to default options
-                CONFIG = new Conf();
-            }
-            configManager.save(CONFIG, configFile);
-        } catch (IOException e) {
-            throw new RuntimeException(e);
-        }
+        this.proxy = proxy;
     }
 
-    public static final String FLAG_PLAYER = "v2cc_player";
+    @Override
+    public Class<? extends PacketProtocol> getPacketProtocol() {
+        throw new UnsupportedOperationException();
+    }
+
+    @Override
+    public PacketProtocol createPacketProtocol() {
+        return new ServerProtocol(this.proxy);
+    }
 }

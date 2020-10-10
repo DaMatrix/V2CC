@@ -18,44 +18,25 @@
  *
  */
 
-package net.daporkchop.v2cc.util;
+package net.daporkchop.v2cc.proxy;
 
-import lombok.experimental.UtilityClass;
-import net.daporkchop.lib.common.misc.file.PFiles;
-import net.daporkchop.lib.config.PConfig;
-import net.daporkchop.lib.config.decoder.PorkConfigDecoder;
-import net.daporkchop.lib.logging.Logger;
-import net.daporkchop.lib.logging.Logging;
-
-import java.io.File;
-import java.io.IOException;
+import com.github.steveice10.packetlib.Session;
+import lombok.Getter;
+import lombok.NonNull;
+import lombok.RequiredArgsConstructor;
+import net.daporkchop.v2cc.Proxy;
 
 /**
+ * The actual player, a tunnel between a vanilla client and a Forge server.
+ *
  * @author DaPorkchop_
  */
-@UtilityClass
-public class Constants {
-    public static final String VERSION = "0.0.1a";
-
-    public static final Logger LOG = Logging.logger.redirectStdOut().enableANSI();
-
-    public static final Conf CONFIG;
-
-    static {
-        PConfig configManager = new PConfig(new PorkConfigDecoder());
-        try {
-            LOG.info("Loading config...");
-            File configFile = new File("v2cc.cfg");
-            if (PFiles.checkFileExists(configFile)) {
-                CONFIG = configManager.load(Conf.class, new File("v2cc.cfg"));
-            } else { //config file doesn't exist, fall back to default options
-                CONFIG = new Conf();
-            }
-            configManager.save(CONFIG, configFile);
-        } catch (IOException e) {
-            throw new RuntimeException(e);
-        }
-    }
-
-    public static final String FLAG_PLAYER = "v2cc_player";
+@RequiredArgsConstructor
+@Getter
+public class Player {
+    @NonNull
+    protected final Proxy proxy;
+    @NonNull
+    protected final Session serverSession;
+    protected Session sessionClient;
 }

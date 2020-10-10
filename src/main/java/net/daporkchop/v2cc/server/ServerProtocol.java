@@ -18,15 +18,37 @@
  *
  */
 
-package net.daporkchop.v2cc;
+package net.daporkchop.v2cc.server;
+
+import com.github.steveice10.mc.protocol.MinecraftProtocol;
+import com.github.steveice10.packetlib.Client;
+import com.github.steveice10.packetlib.Server;
+import com.github.steveice10.packetlib.Session;
+import lombok.NonNull;
+import lombok.RequiredArgsConstructor;
+import net.daporkchop.v2cc.Proxy;
+import net.daporkchop.v2cc.proxy.Player;
 
 import static net.daporkchop.v2cc.util.Constants.*;
 
 /**
+ * Extension of {@link MinecraftProtocol} which creates a new player for incoming connections.
+ *
  * @author DaPorkchop_
  */
-public class Main {
-    public static void main(String... args) {
-        LOG.info("Hello world!");
+@RequiredArgsConstructor
+public class ServerProtocol extends MinecraftProtocol {
+    @NonNull
+    protected final Proxy proxy;
+
+    @Override
+    public void newClientSession(Client client, Session session) {
+        throw new UnsupportedOperationException();
+    }
+
+    @Override
+    public void newServerSession(Server server, Session session) {
+        super.newServerSession(server, session);
+        session.setFlag(FLAG_PLAYER, new Player(this.proxy, session));
     }
 }
