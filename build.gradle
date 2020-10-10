@@ -58,8 +58,6 @@ configurations {
 }
 
 dependencies {
-    shade "net.daporkchop.lib:gui:$porklibVersion"
-    shade "net.daporkchop.lib:hash:$porklibVersion"
     shade "net.daporkchop.lib:logging:$porklibVersion"
 
     shade "com.github.steveice10:mcprotocollib:$mcprotocollibVersion"
@@ -70,4 +68,23 @@ dependencies {
     testCompileOnly "org.projectlombok:lombok:$lombokVersion"
     annotationProcessor "org.projectlombok:lombok:$lombokVersion"
     testAnnotationProcessor "org.projectlombok:lombok:$lombokVersion"
+}
+
+jar {
+    from {
+        configurations.shade.collect {
+            it.isDirectory() ? it : zipTree(it)
+        }.unique()
+    } {
+        exclude "META-INF/**"
+        exclude sourceSets.main.output.asFileTree.collect {
+            return it.getPath().split("java/main/").last()
+        }
+    }
+
+    manifest {
+        attributes "Implementation-Title": "DaPorkchop_",
+                "Implementation-Version": version,
+                "Main-Class": "net.daporkchop.v2cc.Main"
+    }
 }
