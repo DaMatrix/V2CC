@@ -18,36 +18,30 @@
  *
  */
 
-package net.daporkchop.v2cc.server;
+package net.daporkchop.v2cc.client;
 
-import com.github.steveice10.packetlib.Server;
+import com.github.steveice10.mc.protocol.MinecraftProtocol;
+import com.github.steveice10.packetlib.Client;
+import com.github.steveice10.packetlib.SessionFactory;
 import com.github.steveice10.packetlib.packet.PacketProtocol;
 import lombok.Getter;
 import lombok.NonNull;
 import net.daporkchop.v2cc.Proxy;
+import net.daporkchop.v2cc.proxy.Player;
+import net.daporkchop.v2cc.proxy.ProxyProtocol;
 
 /**
- * Extension of {@link Server} which allows me to pass a {@link Proxy} to the {@link PacketProtocol} constructor.
- *
  * @author DaPorkchop_
  */
 @Getter
-public class BetterServer extends Server {
+public class CCClient extends Client {
     protected final Proxy proxy;
+    protected final Player player;
 
-    public BetterServer(String host, int port, @NonNull Proxy proxy) {
-        super(host, port, null, proxy.sessionFactory());
+    public CCClient(@NonNull Proxy proxy, @NonNull Player player) {
+        super(proxy.config().client.backend.host, proxy.config().client.backend.port, new ProxyProtocol(proxy, player.username()), proxy.sessionFactory());
 
         this.proxy = proxy;
-    }
-
-    @Override
-    public Class<? extends PacketProtocol> getPacketProtocol() {
-        throw new UnsupportedOperationException();
-    }
-
-    @Override
-    public PacketProtocol createPacketProtocol() {
-        return new ServerProtocol(this.proxy);
+        this.player = player;
     }
 }

@@ -20,21 +20,19 @@
 
 package net.daporkchop.v2cc;
 
-import com.github.steveice10.mc.protocol.MinecraftConstants;
-import com.github.steveice10.mc.protocol.MinecraftProtocol;
-import com.github.steveice10.packetlib.Client;
-import com.github.steveice10.packetlib.ConnectionListener;
 import com.github.steveice10.packetlib.Server;
-import com.github.steveice10.packetlib.Session;
 import com.github.steveice10.packetlib.SessionFactory;
-import com.github.steveice10.packetlib.packet.PacketProtocol;
-import com.github.steveice10.packetlib.tcp.TcpClientSession;
-import com.github.steveice10.packetlib.tcp.TcpConnectionListener;
-import com.github.steveice10.packetlib.tcp.TcpServerSession;
 import com.github.steveice10.packetlib.tcp.TcpSessionFactory;
 import lombok.Getter;
+import lombok.NonNull;
+import net.daporkchop.lib.common.misc.file.PFiles;
+import net.daporkchop.lib.config.PConfig;
+import net.daporkchop.lib.config.decoder.PorkConfigDecoder;
+import net.daporkchop.v2cc.server.VServer;
+import net.daporkchop.v2cc.util.Conf;
 
-import java.net.InetSocketAddress;
+import java.io.File;
+import java.io.IOException;
 import java.util.Scanner;
 
 import static net.daporkchop.v2cc.util.Constants.*;
@@ -44,28 +42,46 @@ import static net.daporkchop.v2cc.util.Constants.*;
  */
 @Getter
 public class Proxy {
+    protected final File root;
+    protected final Conf config;
+
     protected final SessionFactory sessionFactory;
     protected final Server server;
 
     public static void main(String... args) {
         LOG.info("Starting V2CC v%s...", VERSION);
 
-        new Proxy();
+        new Proxy(new File("."));
     }
 
-    public Proxy()  {
-        this.sessionFactory = new TcpSessionFactory(CONFIG.client.proxy.toJavaProxy());
+    public Proxy(@NonNull File root)  {
+        this.root = root;
+        this.config = this.loadConfig();
 
-        LOG.info("Starting server on %s:%d...", CONFIG.server.bind.address, CONFIG.server.bind.port);
-        this.server = new Server(CONFIG.server.bind.address, CONFIG.server.bind.port, MinecraftProtocol.class, this.sessionFactory);
-        this.server.setGlobalFlag(MinecraftConstants.VERIFY_USERS_KEY, false);
-        this.server.setGlobalFlag(MinecraftConstants.SERVER_COMPRESSION_THRESHOLD, CONFIG.server.compressionThreshold);
-        this.server.bind(false);
-        LOG.success("Server started.");
+        this.sessionFactory = new TcpSessionFactory(this.config.client.proxy.toJavaProxy());
+        this.server = new VServer(this);
 
         new Scanner(System.in).nextLine();
         LOG.info("Stopping server...");
         this.server.close(true);
         LOG.success("Server stopped.");
+    }
+
+    protected Conf loadConfig() {
+        PConfig manager = new PConfig(new PorkConfigDecoder());
+        Conf conf;
+        try {
+            LOG.info("Loading config...");
+            File configFile = new File(this.root, "v2cc.cfg");
+            if (PFiles.checkFileExists(configFile)) {
+                conf = manager.load(Conf.class, configFile);
+            } else { //config file doesn't exist, fall back to default options
+                conf = new Conf();
+            }
+            manager.save(conf, configFile);
+        } catch (IOException e) {
+            throw new RuntimeException(e);
+        }
+        return conf;
     }
 }

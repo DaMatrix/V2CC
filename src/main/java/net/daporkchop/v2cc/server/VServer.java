@@ -20,35 +20,44 @@
 
 package net.daporkchop.v2cc.server;
 
-import com.github.steveice10.mc.protocol.MinecraftProtocol;
-import com.github.steveice10.packetlib.Client;
+import com.github.steveice10.mc.protocol.MinecraftConstants;
 import com.github.steveice10.packetlib.Server;
-import com.github.steveice10.packetlib.Session;
+import com.github.steveice10.packetlib.packet.PacketProtocol;
+import lombok.Getter;
 import lombok.NonNull;
-import lombok.RequiredArgsConstructor;
 import net.daporkchop.v2cc.Proxy;
-import net.daporkchop.v2cc.proxy.Player;
+import net.daporkchop.v2cc.proxy.ProxyProtocol;
 
 import static net.daporkchop.v2cc.util.Constants.*;
 
 /**
- * Extension of {@link MinecraftProtocol} which creates a new player for incoming connections.
+ * Extension of {@link Server} which allows me to pass a {@link Proxy} to the {@link PacketProtocol} constructor.
  *
  * @author DaPorkchop_
  */
-@RequiredArgsConstructor
-public class ServerProtocol extends MinecraftProtocol {
-    @NonNull
+@Getter
+public class VServer extends Server {
     protected final Proxy proxy;
 
+    public VServer(@NonNull Proxy proxy) {
+        super(proxy.config().server.bind.address, proxy.config().server.bind.port, null, proxy.sessionFactory());
+
+        this.proxy = proxy;
+
+        LOG.info("Starting server on %s:%d...", this.proxy.config().server.bind.address, this.proxy.config().server.bind.port);
+        this.setGlobalFlag(MinecraftConstants.VERIFY_USERS_KEY, false);
+        this.setGlobalFlag(MinecraftConstants.SERVER_COMPRESSION_THRESHOLD, this.proxy.config().server.compressionThreshold);
+        this.bind(false);
+        LOG.success("Server started.");
+    }
+
     @Override
-    public void newClientSession(Client client, Session session) {
+    public Class<? extends PacketProtocol> getPacketProtocol() {
         throw new UnsupportedOperationException();
     }
 
     @Override
-    public void newServerSession(Server server, Session session) {
-        super.newServerSession(server, session);
-        session.setFlag(FLAG_PLAYER, new Player(this.proxy, session));
+    public PacketProtocol createPacketProtocol() {
+        return new ProxyProtocol(this.proxy);
     }
 }

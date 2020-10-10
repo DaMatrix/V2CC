@@ -20,33 +20,43 @@
 
 package net.daporkchop.v2cc.proxy;
 
+import com.github.steveice10.mc.protocol.MinecraftProtocol;
+import com.github.steveice10.packetlib.Client;
+import com.github.steveice10.packetlib.Server;
 import com.github.steveice10.packetlib.Session;
-import lombok.AccessLevel;
-import lombok.Getter;
 import lombok.NonNull;
-import lombok.Setter;
+import lombok.RequiredArgsConstructor;
 import net.daporkchop.v2cc.Proxy;
+import net.daporkchop.v2cc.client.CCClient;
+
+import static net.daporkchop.v2cc.util.Constants.*;
 
 /**
- * The actual player, a tunnel between a vanilla client and a Forge server.
+ * Extension of {@link MinecraftProtocol} which creates a new player for incoming connections.
  *
  * @author DaPorkchop_
  */
-@Getter
-@Setter
-public class Player {
+@RequiredArgsConstructor
+public class ProxyProtocol extends MinecraftProtocol {
+    @NonNull
     protected final Proxy proxy;
 
-    protected final Session serverSession;
-    @NonNull
-    @Setter(AccessLevel.PACKAGE)
-    protected Session clientSession;
+    public ProxyProtocol(@NonNull Proxy proxy, @NonNull String username)    {
+        super(username);
 
-    @NonNull
-    protected String username;
-
-    public Player(@NonNull Proxy proxy, @NonNull Session serverSession) {
         this.proxy = proxy;
-        this.serverSession = serverSession;
+    }
+
+    @Override
+    public void newClientSession(Client clientIn, Session session) {
+        CCClient client = (CCClient) clientIn;
+        session.setFlag(FLAG_PLAYER, client.player());
+        client.player().clientSession(session);
+    }
+
+    @Override
+    public void newServerSession(Server server, Session session) {
+        super.newServerSession(server, session);
+        session.setFlag(FLAG_PLAYER, new Player(this.proxy, session));
     }
 }
