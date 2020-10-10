@@ -21,6 +21,7 @@
 package net.daporkchop.v2cc.util;
 
 import lombok.experimental.UtilityClass;
+import net.daporkchop.lib.logging.LogAmount;
 import net.daporkchop.lib.logging.Logger;
 import net.daporkchop.lib.logging.Logging;
 
@@ -31,7 +32,10 @@ import net.daporkchop.lib.logging.Logging;
 public class Constants {
     public static final String VERSION = "0.0.1a";
 
-    public static final Logger LOG = Logging.logger.redirectStdOut().enableANSI();
+    public static final Logger LOG = Logging.logger
+            .redirectStdOut()
+            .enableANSI()
+            .setLogAmount(LogAmount.DEBUG);
 
     public static final String FLAG_PLAYER = "v2cc_player";
 }

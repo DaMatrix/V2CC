@@ -20,10 +20,7 @@
 
 package net.daporkchop.v2cc.client;
 
-import com.github.steveice10.mc.protocol.MinecraftProtocol;
 import com.github.steveice10.packetlib.Client;
-import com.github.steveice10.packetlib.SessionFactory;
-import com.github.steveice10.packetlib.packet.PacketProtocol;
 import lombok.Getter;
 import lombok.NonNull;
 import net.daporkchop.v2cc.Proxy;
@@ -39,7 +36,7 @@ public class CCClient extends Client {
     protected final Player player;
 
     public CCClient(@NonNull Proxy proxy, @NonNull Player player) {
-        super(proxy.config().client.backend.host, proxy.config().client.backend.port, new ProxyProtocol(proxy, player.username()), proxy.sessionFactory());
+        super(proxy.config().client.backend.host, proxy.config().client.backend.port, new ProxyProtocol(proxy, player.packetLoginStart().getUsername()), proxy.sessionFactory());
 
         this.proxy = proxy;
         this.player = player;

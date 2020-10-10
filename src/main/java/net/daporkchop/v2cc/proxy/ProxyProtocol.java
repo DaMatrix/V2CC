@@ -20,7 +20,9 @@
 
 package net.daporkchop.v2cc.proxy;
 
+import com.github.steveice10.mc.protocol.MinecraftConstants;
 import com.github.steveice10.mc.protocol.MinecraftProtocol;
+import com.github.steveice10.mc.protocol.data.SubProtocol;
 import com.github.steveice10.packetlib.Client;
 import com.github.steveice10.packetlib.Server;
 import com.github.steveice10.packetlib.Session;
@@ -28,6 +30,7 @@ import lombok.NonNull;
 import lombok.RequiredArgsConstructor;
 import net.daporkchop.v2cc.Proxy;
 import net.daporkchop.v2cc.client.CCClient;
+import net.daporkchop.v2cc.client.CCSessionListener;
 
 import static net.daporkchop.v2cc.util.Constants.*;
 
@@ -41,7 +44,7 @@ public class ProxyProtocol extends MinecraftProtocol {
     @NonNull
     protected final Proxy proxy;
 
-    public ProxyProtocol(@NonNull Proxy proxy, @NonNull String username)    {
+    public ProxyProtocol(@NonNull Proxy proxy, @NonNull String username) {
         super(username);
 
         this.proxy = proxy;
@@ -51,12 +54,24 @@ public class ProxyProtocol extends MinecraftProtocol {
     public void newClientSession(Client clientIn, Session session) {
         CCClient client = (CCClient) clientIn;
         session.setFlag(FLAG_PLAYER, client.player());
-        client.player().clientSession(session);
+
+        if (this.getProfile() != null) {
+            session.setFlag(MinecraftConstants.PROFILE_KEY, this.getProfile());
+            session.setFlag(MinecraftConstants.ACCESS_TOKEN_KEY, this.getAccessToken());
+        }
+        this.setSubProtocol(this.getSubProtocol(), true, session);
+
+        session.addListener(new CCSessionListener(client.player()));
     }
 
     @Override
     public void newServerSession(Server server, Session session) {
         super.newServerSession(server, session);
         session.setFlag(FLAG_PLAYER, new Player(this.proxy, session));
+    }
+
+    @Override
+    public void setSubProtocol(SubProtocol subProtocol, boolean client, Session session) {
+        super.setSubProtocol(subProtocol, client, session);
     }
 }

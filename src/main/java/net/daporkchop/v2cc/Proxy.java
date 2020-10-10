@@ -23,16 +23,23 @@ package net.daporkchop.v2cc;
 import com.github.steveice10.packetlib.Server;
 import com.github.steveice10.packetlib.SessionFactory;
 import com.github.steveice10.packetlib.tcp.TcpSessionFactory;
+import com.google.gson.Gson;
+import com.google.gson.GsonBuilder;
 import lombok.Getter;
 import lombok.NonNull;
+import net.daporkchop.lib.binary.oio.appendable.PAppendable;
+import net.daporkchop.lib.binary.oio.reader.UTF8FileReader;
+import net.daporkchop.lib.binary.oio.writer.UTF8FileWriter;
 import net.daporkchop.lib.common.misc.file.PFiles;
 import net.daporkchop.lib.config.PConfig;
 import net.daporkchop.lib.config.decoder.PorkConfigDecoder;
 import net.daporkchop.v2cc.server.VServer;
 import net.daporkchop.v2cc.util.Conf;
 
+import java.io.BufferedReader;
 import java.io.File;
 import java.io.IOException;
+import java.io.Reader;
 import java.util.Scanner;
 
 import static net.daporkchop.v2cc.util.Constants.*;
@@ -62,9 +69,7 @@ public class Proxy {
         this.server = new VServer(this);
 
         new Scanner(System.in).nextLine();
-        LOG.info("Stopping server...");
         this.server.close(true);
-        LOG.success("Server stopped.");
     }
 
     protected Conf loadConfig() {

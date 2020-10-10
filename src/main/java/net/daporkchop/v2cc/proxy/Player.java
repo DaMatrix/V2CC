@@ -20,12 +20,18 @@
 
 package net.daporkchop.v2cc.proxy;
 
+import com.github.steveice10.mc.protocol.packet.handshake.client.HandshakePacket;
+import com.github.steveice10.mc.protocol.packet.ingame.server.ServerJoinGamePacket;
+import com.github.steveice10.mc.protocol.packet.login.client.LoginStartPacket;
+import com.github.steveice10.packetlib.Client;
 import com.github.steveice10.packetlib.Session;
 import lombok.AccessLevel;
 import lombok.Getter;
 import lombok.NonNull;
 import lombok.Setter;
 import net.daporkchop.v2cc.Proxy;
+import net.daporkchop.v2cc.client.CCClient;
+import net.daporkchop.v2cc.server.VSessionListener;
 
 /**
  * The actual player, a tunnel between a vanilla client and a Forge server.
@@ -38,15 +44,26 @@ public class Player {
     protected final Proxy proxy;
 
     protected final Session serverSession;
-    @NonNull
-    @Setter(AccessLevel.PACKAGE)
+    @Setter(AccessLevel.NONE)
     protected Session clientSession;
 
     @NonNull
-    protected String username;
+    @Setter(AccessLevel.NONE)
+    protected Client client;
+
+    @NonNull
+    protected HandshakePacket packetHandshake;
+    @NonNull
+    protected LoginStartPacket packetLoginStart;
 
     public Player(@NonNull Proxy proxy, @NonNull Session serverSession) {
         this.proxy = proxy;
         this.serverSession = serverSession;
+    }
+
+    public void createClientAndConnect()  {
+        this.client = new CCClient(this.proxy, this);
+        this.clientSession = this.client.getSession();
+        this.clientSession.connect();
     }
 }

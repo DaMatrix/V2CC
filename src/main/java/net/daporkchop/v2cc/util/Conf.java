@@ -22,56 +22,60 @@ package net.daporkchop.v2cc.util;
 
 import lombok.AccessLevel;
 import lombok.NoArgsConstructor;
+import lombok.ToString;
 import net.daporkchop.lib.config.Config;
 
 import java.net.InetSocketAddress;
-import java.net.Proxy;
 
 /**
  * V2CC's configuration.
  *
  * @author DaPorkchop_
  */
+@ToString
 public class Conf {
     @Config.Comment({
             "Options for V2CC's client.",
             "The client initiates connections to the Cubic Chunks backend server."
     })
-    public final Client client = new Client();
+    public Client client = new Client();
 
     @Config.Comment({
             "Options for V2CC's server.",
             "The server accepts connections from vanilla Minecraft clients."
     })
-    public final Server server = new Server();
+    public Server server = new Server();
 
     @NoArgsConstructor(access = AccessLevel.PRIVATE)
+    @ToString
     public static final class Client {
         @Config.Comment("The backend server that the client will connect to.")
-        public final Backend backend = new Backend();
+        public Backend backend = new Backend();
 
         @Config.Comment("An optional SOCKS5 proxy that will be used for connecting to the backend server.")
-        public final Proxy proxy = new Proxy();
+        public Proxy proxy = new Proxy();
 
         @NoArgsConstructor(access = AccessLevel.PRIVATE)
+        @ToString
         public static final class Backend {
             @Config.Comment("The hostname of the backend server.")
-            public final String host = "mc.example.com";
+            public String host = "mc.example.com";
 
             @Config.Comment("The port number of the backend server.")
-            public final int port = 25565;
+            public int port = 25565;
         }
 
         @NoArgsConstructor(access = AccessLevel.PRIVATE)
+        @ToString
         public static final class Proxy {
             @Config.Comment("Whether or not to use a proxy.")
-            public final boolean use = false;
+            public boolean use = false;
 
             @Config.Comment("The hostname of the proxy.")
-            public final String host = "localhost";
+            public String host = "localhost";
 
             @Config.Comment("The port number of the proxy.")
-            public final int port = 1080;
+            public int port = 1080;
 
             public java.net.Proxy toJavaProxy() {
                 if (this.use)   {
@@ -84,32 +88,34 @@ public class Conf {
     }
 
     @NoArgsConstructor(access = AccessLevel.PRIVATE)
+    @ToString
     public static final class Server {
-        public final Bind bind = new Bind();
+        public Bind bind = new Bind();
 
         @Config.Comment({
                 "The maximum number of players that may connect to the proxy at once.",
                 "If ≤ 0, no limit will be enforced."
         })
-        public final int maxPlayers = 20;
+        public int maxPlayers = 20;
 
         @Config.Comment({
                 "The maximum size (in bytes) of a packet before compressing it.",
                 "Packets smaller than this will be sent uncompressed.",
                 "Set to -1 to completely disable packet compression."
         })
-        public final int compressionThreshold = 256;
+        public int compressionThreshold = 256;
 
         @NoArgsConstructor(access = AccessLevel.PRIVATE)
+        @ToString
         public static final class Bind {
             @Config.Comment({
                     "The address to bind to.",
                     "This should always be 0.0.0.0 unless you know EXACTLY what you're doing!"
             })
-            public final String address = "0.0.0.0";
+            public String address = "0.0.0.0";
 
             @Config.Comment("The TCP port number to bind to.")
-            public final int port = 25566;
+            public int port = 25566;
         }
     }
 }
