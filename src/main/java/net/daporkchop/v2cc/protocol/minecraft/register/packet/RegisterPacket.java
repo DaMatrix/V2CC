@@ -18,9 +18,8 @@
  *
  */
 
-package net.daporkchop.v2cc.client.fml.hs.packet.server;
+package net.daporkchop.v2cc.protocol.minecraft.register.packet;
 
-import com.github.steveice10.mc.protocol.packet.MinecraftPacket;
 import com.github.steveice10.packetlib.io.NetInput;
 import com.github.steveice10.packetlib.io.NetOutput;
 import lombok.AccessLevel;
@@ -28,14 +27,15 @@ import lombok.AllArgsConstructor;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
 import lombok.Setter;
-import net.daporkchop.lib.common.function.io.IOBiConsumer;
-import net.daporkchop.lib.common.function.io.IOConsumer;
+import net.daporkchop.v2cc.protocol.PluginPacket;
+import net.daporkchop.v2cc.protocol.PluginProtocol;
+import net.daporkchop.v2cc.protocol.minecraft.register.RegisterProtocol;
 
 import java.io.IOException;
-import java.util.HashMap;
-import java.util.HashSet;
-import java.util.Map;
-import java.util.Set;
+import java.nio.charset.StandardCharsets;
+import java.util.ArrayList;
+import java.util.Collections;
+import java.util.List;
 
 /**
  * @author DaPorkchop_
@@ -44,51 +44,21 @@ import java.util.Set;
 @AllArgsConstructor
 @Setter
 @Getter
-public class RegistryDataPacket extends MinecraftPacket {
-    protected boolean hasMore;
-    protected String name;
-    protected Map<String, Integer> ids;
-    protected Set<String> substitutions;
-    protected Set<String> dummied; //no, this isn't a typo
+public class RegisterPacket extends PluginPacket {
+    protected List<String> channels;
 
     @Override
     public void read(NetInput in) throws IOException {
-        this.hasMore = in.readBoolean();
-        this.name = in.readString();
-
-        this.ids = new HashMap<>();
-        for (int i = in.readVarInt() - 1; i >= 0; i--) {
-            this.ids.put(in.readString(), in.readVarInt());
-        }
-
-        this.substitutions = new HashSet<>();
-        for (int i = in.readVarInt() - 1; i >= 0; i--) {
-            this.substitutions.add(in.readString());
-        }
-
-        this.dummied = new HashSet<>();
-        if (in.available() > 0) { //may be absent
-            for (int i = in.readVarInt() - 1; i >= 0; i--) {
-                this.dummied.add(in.readString());
-            }
-        }
+        Collections.addAll(this.channels = new ArrayList<>(), new String(in.readBytes(in.available()), StandardCharsets.US_ASCII).split("\0"));
     }
 
     @Override
     public void write(NetOutput out) throws IOException {
-        out.writeBoolean(this.hasMore);
-        out.writeString(this.name);
+        out.writeBytes(String.join("\0").getBytes(StandardCharsets.US_ASCII));
+    }
 
-        out.writeVarInt(this.ids.size());
-        this.ids.forEach((IOBiConsumer<String, Integer>) (name, id) -> {
-            out.writeString(name);
-            out.writeVarInt(id);
-        });
-
-        out.writeVarInt(this.substitutions.size());
-        this.substitutions.forEach((IOConsumer<String>) out::writeString);
-
-        out.writeVarInt(this.dummied.size());
-        this.dummied.forEach((IOConsumer<String>) out::writeString);
+    @Override
+    public PluginProtocol getProtocol() {
+        return RegisterProtocol.INSTANCE;
     }
 }

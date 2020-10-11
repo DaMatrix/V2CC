@@ -18,9 +18,8 @@
  *
  */
 
-package net.daporkchop.v2cc.client.fml.hs.packet;
+package net.daporkchop.v2cc.protocol.fml.hs.packet.server;
 
-import com.github.steveice10.mc.protocol.packet.MinecraftPacket;
 import com.github.steveice10.packetlib.io.NetInput;
 import com.github.steveice10.packetlib.io.NetOutput;
 import lombok.AccessLevel;
@@ -29,10 +28,16 @@ import lombok.Getter;
 import lombok.NoArgsConstructor;
 import lombok.Setter;
 import net.daporkchop.lib.common.function.io.IOBiConsumer;
+import net.daporkchop.lib.common.function.io.IOConsumer;
+import net.daporkchop.v2cc.protocol.PluginPacket;
+import net.daporkchop.v2cc.protocol.PluginProtocol;
+import net.daporkchop.v2cc.protocol.fml.hs.FMLHSProtocol;
 
 import java.io.IOException;
 import java.util.HashMap;
+import java.util.HashSet;
 import java.util.Map;
+import java.util.Set;
 
 /**
  * @author DaPorkchop_
@@ -41,23 +46,56 @@ import java.util.Map;
 @AllArgsConstructor
 @Setter
 @Getter
-public class ModListPacket extends MinecraftPacket {
-    protected Map<String, String> mods; //key: modid, value: version
+public class RegistryDataPacket extends PluginPacket {
+    protected boolean hasMore;
+    protected String name;
+    protected Map<String, Integer> ids;
+    protected Set<String> substitutions;
+    protected Set<String> dummied; //no, this isn't a typo
 
     @Override
     public void read(NetInput in) throws IOException {
-        this.mods = new HashMap<>();
+        this.hasMore = in.readBoolean();
+        this.name = in.readString();
+
+        this.ids = new HashMap<>();
         for (int i = in.readVarInt() - 1; i >= 0; i--) {
-            this.mods.put(in.readString(), in.readString());
+            this.ids.put(in.readString(), in.readVarInt());
+        }
+
+        this.substitutions = new HashSet<>();
+        for (int i = in.readVarInt() - 1; i >= 0; i--) {
+            this.substitutions.add(in.readString());
+        }
+
+        this.dummied = new HashSet<>();
+        if (in.available() > 0) { //may be absent
+            for (int i = in.readVarInt() - 1; i >= 0; i--) {
+                this.dummied.add(in.readString());
+            }
         }
     }
 
     @Override
     public void write(NetOutput out) throws IOException {
-        out.writeVarInt(this.mods.size());
-        this.mods.forEach((IOBiConsumer<String, String>) (modid, version) -> {
-            out.writeString(modid);
-            out.writeString(version);
+        out.writeBoolean(this.hasMore);
+        out.writeString(this.name);
+
+        out.writeVarInt(this.ids.size());
+        this.ids.forEach((IOBiConsumer<String, Integer>) (name, id) -> {
+            out.writeString(name);
+            out.writeVarInt(id);
         });
+
+        out.writeVarInt(this.substitutions.size());
+        this.substitutions.forEach((IOConsumer<String>) out::writeString);
+
+        out.writeVarInt(this.dummied.size());
+        this.dummied.forEach((IOConsumer<String>) out::writeString);
+    }
+
+    @Override
+    public PluginProtocol getProtocol() {
+        return FMLHSProtocol.INSTANCE;
     }
 }

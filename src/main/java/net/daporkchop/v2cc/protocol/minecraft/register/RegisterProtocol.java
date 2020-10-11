@@ -18,34 +18,30 @@
  *
  */
 
-package net.daporkchop.v2cc.client;
+package net.daporkchop.v2cc.protocol.minecraft.register;
 
-import com.github.steveice10.packetlib.Client;
-import lombok.Getter;
+import com.github.steveice10.packetlib.packet.PacketHeader;
 import lombok.NonNull;
-import net.daporkchop.v2cc.Proxy;
-import net.daporkchop.v2cc.proxy.Player;
-import net.daporkchop.v2cc.proxy.ProxyProtocol;
-
-import static net.daporkchop.v2cc.util.Constants.*;
+import net.daporkchop.v2cc.protocol.PluginProtocol;
+import net.daporkchop.v2cc.protocol.minecraft.register.packet.RegisterPacket;
 
 /**
  * @author DaPorkchop_
  */
-@Getter
-public class CCClient extends Client {
-    protected final Proxy proxy;
-    protected final Player player;
+public class RegisterProtocol extends PluginProtocol {
+    public static final RegisterProtocol INSTANCE = new RegisterProtocol();
 
-    @SuppressWarnings("deprecation")
-    public CCClient(@NonNull Proxy proxy, @NonNull Player player) {
-        super(proxy.config().client.backend.host, proxy.config().client.backend.port,
-                proxy.config().debug.authenticateBackendConnections
-                        ? unsafe_call(() -> new ProxyProtocol(proxy, proxy.config().debug.credentials.username, proxy.config().debug.credentials.password))
-                        : new ProxyProtocol(proxy, player.packetLoginStart().getUsername()),
-                proxy.sessionFactory());
+    protected RegisterProtocol() {
+        super("REGISTER");
+    }
 
-        this.proxy = proxy;
-        this.player = player;
+    @Override
+    protected void registerPackets() {
+        this.register(0, RegisterPacket.class);
+    }
+
+    @Override
+    public PacketHeader getPacketHeader() {
+        return RegisterPacketHeader.INSTANCE;
     }
 }

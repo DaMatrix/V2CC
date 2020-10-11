@@ -18,27 +18,43 @@
  *
  */
 
-package net.daporkchop.v2cc.client.fml.hs;
+package net.daporkchop.v2cc.protocol.fml.hs.packet.client;
 
-import net.daporkchop.v2cc.client.fml.FMLProtocol;
-import net.daporkchop.v2cc.client.fml.hs.packet.HandshakeAckPacket;
-import net.daporkchop.v2cc.client.fml.hs.packet.ModListPacket;
-import net.daporkchop.v2cc.client.fml.hs.packet.client.ClientHelloPacket;
-import net.daporkchop.v2cc.client.fml.hs.packet.server.HandshakeResetPacket;
-import net.daporkchop.v2cc.client.fml.hs.packet.server.RegistryDataPacket;
-import net.daporkchop.v2cc.client.fml.hs.packet.server.ServerHelloPacket;
+import com.github.steveice10.packetlib.io.NetInput;
+import com.github.steveice10.packetlib.io.NetOutput;
+import lombok.AccessLevel;
+import lombok.AllArgsConstructor;
+import lombok.Getter;
+import lombok.NoArgsConstructor;
+import lombok.Setter;
+import net.daporkchop.v2cc.protocol.PluginPacket;
+import net.daporkchop.v2cc.protocol.PluginProtocol;
+import net.daporkchop.v2cc.protocol.fml.hs.FMLHSProtocol;
+
+import java.io.IOException;
 
 /**
  * @author DaPorkchop_
  */
-public class FMLHSProtocol extends FMLProtocol {
+@NoArgsConstructor(access = AccessLevel.PRIVATE)
+@AllArgsConstructor
+@Setter
+@Getter
+public class ClientHelloPacket extends PluginPacket {
+    protected byte serverProtocolVersion;
+
     @Override
-    protected void registerPackets() {
-        this.registerIncoming(0, ServerHelloPacket.class);
-        this.registerOutgoing(1, ClientHelloPacket.class);
-        this.register(2, ModListPacket.class);
-        this.registerIncoming(3, RegistryDataPacket.class);
-        this.registerIncoming(254, HandshakeResetPacket.class);
-        this.register(255, HandshakeAckPacket.class);
+    public void read(NetInput in) throws IOException {
+        this.serverProtocolVersion = in.readByte();
+    }
+
+    @Override
+    public void write(NetOutput out) throws IOException {
+        out.writeByte(this.serverProtocolVersion);
+    }
+
+    @Override
+    public PluginProtocol getProtocol() {
+        return FMLHSProtocol.INSTANCE;
     }
 }

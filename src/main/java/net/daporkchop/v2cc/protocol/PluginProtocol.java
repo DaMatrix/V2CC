@@ -18,62 +18,51 @@
  *
  */
 
-package net.daporkchop.v2cc.proxy;
+package net.daporkchop.v2cc.protocol;
 
-import com.github.steveice10.mc.protocol.packet.handshake.client.HandshakePacket;
-import com.github.steveice10.mc.protocol.packet.ingame.server.ServerJoinGamePacket;
-import com.github.steveice10.mc.protocol.packet.login.client.LoginStartPacket;
 import com.github.steveice10.packetlib.Client;
+import com.github.steveice10.packetlib.Server;
 import com.github.steveice10.packetlib.Session;
+import com.github.steveice10.packetlib.crypt.PacketEncryption;
 import com.github.steveice10.packetlib.packet.PacketProtocol;
-import lombok.AccessLevel;
 import lombok.Getter;
 import lombok.NonNull;
-import lombok.Setter;
-import net.daporkchop.v2cc.Proxy;
-import net.daporkchop.v2cc.client.CCClient;
-import net.daporkchop.v2cc.protocol.PluginProtocol;
-import net.daporkchop.v2cc.server.VSessionListener;
-
-import java.util.HashMap;
-import java.util.Map;
 
 /**
- * The actual player, a tunnel between a vanilla client and a Forge server.
- *
  * @author DaPorkchop_
  */
 @Getter
-@Setter
-public class Player {
-    protected final Proxy proxy;
+public abstract class PluginProtocol extends PacketProtocol {
+    protected final String channelName;
 
-    protected final Session serverSession;
-    @Setter(AccessLevel.NONE)
-    protected Session clientSession;
+    public PluginProtocol(@NonNull String channelName) {
+        this.channelName = channelName;
 
-    @NonNull
-    @Setter(AccessLevel.NONE)
-    protected Client client;
-
-    @NonNull
-    protected HandshakePacket packetHandshake;
-    @NonNull
-    protected LoginStartPacket packetLoginStart;
-
-    protected final Map<String, PluginProtocol> pluginChannels = new HashMap<>();
-
-    public Player(@NonNull Proxy proxy, @NonNull Session serverSession) {
-        this.proxy = proxy;
-        this.serverSession = serverSession;
+        this.registerPackets();
     }
 
-    public void createClientAndConnect()  {
-        this.client = new CCClient(this.proxy, this);
-        (this.clientSession = this.client.getSession()).connect(false);
+    /**
+     * Actually registers the packets used by this protocol.
+     */
+    protected abstract void registerPackets();
+
+    @Override
+    public final String getSRVRecordPrefix() {
+        throw new UnsupportedOperationException();
     }
 
-    public void registerPlugin(@NonNull PluginProtocol protocol) {
-        this.pluginChannels.put(protocol.channelName(), protocol);
+    @Override
+    public PacketEncryption getEncryption() {
+        throw new UnsupportedOperationException();
+    }
+
+    @Override
+    public void newClientSession(Client client, Session session) {
+        throw new UnsupportedOperationException();
+    }
+
+    @Override
+    public void newServerSession(Server server, Session session) {
+        throw new UnsupportedOperationException();
     }
 }

@@ -18,9 +18,8 @@
  *
  */
 
-package net.daporkchop.v2cc.client.fml.hs.packet;
+package net.daporkchop.v2cc.protocol.fml.hs.packet;
 
-import com.github.steveice10.mc.protocol.packet.MinecraftPacket;
 import com.github.steveice10.packetlib.io.NetInput;
 import com.github.steveice10.packetlib.io.NetOutput;
 import lombok.AccessLevel;
@@ -28,6 +27,9 @@ import lombok.AllArgsConstructor;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
 import lombok.Setter;
+import net.daporkchop.v2cc.protocol.PluginPacket;
+import net.daporkchop.v2cc.protocol.PluginProtocol;
+import net.daporkchop.v2cc.protocol.fml.hs.FMLHSProtocol;
 
 import java.io.IOException;
 
@@ -38,7 +40,7 @@ import java.io.IOException;
 @AllArgsConstructor
 @Setter
 @Getter
-public class HandshakeAckPacket extends MinecraftPacket {
+public class HandshakeAckPacket extends PluginPacket {
     protected int phase;
 
     @Override
@@ -49,5 +51,10 @@ public class HandshakeAckPacket extends MinecraftPacket {
     @Override
     public void write(NetOutput out) throws IOException {
         out.writeByte(this.phase);
+    }
+
+    @Override
+    public PluginProtocol getProtocol() {
+        return FMLHSProtocol.INSTANCE;
     }
 }

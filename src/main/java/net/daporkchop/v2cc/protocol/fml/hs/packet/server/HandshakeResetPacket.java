@@ -18,42 +18,30 @@
  *
  */
 
-package net.daporkchop.v2cc.client.fml.hs.packet.server;
+package net.daporkchop.v2cc.protocol.fml.hs.packet.server;
 
-import com.github.steveice10.mc.protocol.packet.MinecraftPacket;
 import com.github.steveice10.packetlib.io.NetInput;
 import com.github.steveice10.packetlib.io.NetOutput;
-import lombok.AccessLevel;
-import lombok.AllArgsConstructor;
-import lombok.Getter;
-import lombok.NoArgsConstructor;
-import lombok.Setter;
+import net.daporkchop.v2cc.protocol.PluginPacket;
+import net.daporkchop.v2cc.protocol.PluginProtocol;
+import net.daporkchop.v2cc.protocol.fml.hs.FMLHSProtocol;
 
 import java.io.IOException;
 
 /**
  * @author DaPorkchop_
  */
-@NoArgsConstructor(access = AccessLevel.PRIVATE)
-@AllArgsConstructor
-@Setter
-@Getter
-public class ServerHelloPacket extends MinecraftPacket {
-    protected byte serverProtocolVersion;
-    protected int overrideDimension;
-
+public class HandshakeResetPacket extends PluginPacket {
     @Override
     public void read(NetInput in) throws IOException {
-        if ((this.serverProtocolVersion = in.readByte()) > 1)   {
-            this.overrideDimension = in.readInt();
-        }
     }
 
     @Override
     public void write(NetOutput out) throws IOException {
-        out.writeByte(this.serverProtocolVersion);
-        if (this.serverProtocolVersion > 1) {
-            out.writeInt(this.overrideDimension);
-        }
+    }
+
+    @Override
+    public PluginProtocol getProtocol() {
+        return FMLHSProtocol.INSTANCE;
     }
 }

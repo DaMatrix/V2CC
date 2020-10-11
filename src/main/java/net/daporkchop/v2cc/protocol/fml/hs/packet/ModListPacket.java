@@ -18,9 +18,8 @@
  *
  */
 
-package net.daporkchop.v2cc.client.fml.hs.packet.client;
+package net.daporkchop.v2cc.protocol.fml.hs.packet;
 
-import com.github.steveice10.mc.protocol.packet.MinecraftPacket;
 import com.github.steveice10.packetlib.io.NetInput;
 import com.github.steveice10.packetlib.io.NetOutput;
 import lombok.AccessLevel;
@@ -28,8 +27,14 @@ import lombok.AllArgsConstructor;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
 import lombok.Setter;
+import net.daporkchop.lib.common.function.io.IOBiConsumer;
+import net.daporkchop.v2cc.protocol.PluginPacket;
+import net.daporkchop.v2cc.protocol.PluginProtocol;
+import net.daporkchop.v2cc.protocol.fml.hs.FMLHSProtocol;
 
 import java.io.IOException;
+import java.util.HashMap;
+import java.util.Map;
 
 /**
  * @author DaPorkchop_
@@ -38,16 +43,28 @@ import java.io.IOException;
 @AllArgsConstructor
 @Setter
 @Getter
-public class ClientHelloPacket extends MinecraftPacket {
-    protected byte serverProtocolVersion;
+public class ModListPacket extends PluginPacket {
+    protected Map<String, String> mods; //key: modid, value: version
 
     @Override
     public void read(NetInput in) throws IOException {
-        this.serverProtocolVersion = in.readByte();
+        this.mods = new HashMap<>();
+        for (int i = in.readVarInt() - 1; i >= 0; i--) {
+            this.mods.put(in.readString(), in.readString());
+        }
     }
 
     @Override
     public void write(NetOutput out) throws IOException {
-        out.writeByte(this.serverProtocolVersion);
+        out.writeVarInt(this.mods.size());
+        this.mods.forEach((IOBiConsumer<String, String>) (modid, version) -> {
+            out.writeString(modid);
+            out.writeString(version);
+        });
+    }
+
+    @Override
+    public PluginProtocol getProtocol() {
+        return FMLHSProtocol.INSTANCE;
     }
 }

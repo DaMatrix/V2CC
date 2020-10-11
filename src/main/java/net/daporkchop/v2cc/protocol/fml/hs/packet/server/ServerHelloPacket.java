@@ -18,61 +18,49 @@
  *
  */
 
-package net.daporkchop.v2cc.client.fml;
+package net.daporkchop.v2cc.protocol.fml.hs.packet.server;
 
 import com.github.steveice10.packetlib.io.NetInput;
 import com.github.steveice10.packetlib.io.NetOutput;
-import com.github.steveice10.packetlib.packet.PacketHeader;
 import lombok.AccessLevel;
+import lombok.AllArgsConstructor;
+import lombok.Getter;
 import lombok.NoArgsConstructor;
+import lombok.Setter;
+import net.daporkchop.v2cc.protocol.PluginPacket;
+import net.daporkchop.v2cc.protocol.PluginProtocol;
+import net.daporkchop.v2cc.protocol.fml.hs.FMLHSProtocol;
 
 import java.io.IOException;
 
 /**
- * This is probably not even needed, but it can't hurt to implement the whole API.
- * <p>
- * ...
- * <p>
- * "implement" my ass. who am i kidding? this is just useless lol
- *
  * @author DaPorkchop_
  */
 @NoArgsConstructor(access = AccessLevel.PRIVATE)
-final class FMLPacketHeader implements PacketHeader {
-    public static final FMLPacketHeader INSTANCE = new FMLPacketHeader();
+@AllArgsConstructor
+@Setter
+@Getter
+public class ServerHelloPacket extends PluginPacket {
+    protected byte serverProtocolVersion;
+    protected int overrideDimension;
 
     @Override
-    public boolean isLengthVariable() {
-        return false;
+    public void read(NetInput in) throws IOException {
+        if ((this.serverProtocolVersion = in.readByte()) > 1) {
+            this.overrideDimension = in.readInt();
+        }
     }
 
     @Override
-    public int getLengthSize() {
-        throw new UnsupportedOperationException();
+    public void write(NetOutput out) throws IOException {
+        out.writeByte(this.serverProtocolVersion);
+        if (this.serverProtocolVersion > 1) {
+            out.writeInt(this.overrideDimension);
+        }
     }
 
     @Override
-    public int getLengthSize(int length) {
-        throw new UnsupportedOperationException();
-    }
-
-    @Override
-    public int readLength(NetInput in, int available) throws IOException {
-        throw new UnsupportedOperationException();
-    }
-
-    @Override
-    public void writeLength(NetOutput out, int length) throws IOException {
-        throw new UnsupportedOperationException();
-    }
-
-    @Override
-    public int readPacketId(NetInput in) throws IOException {
-        return in.readUnsignedByte();
-    }
-
-    @Override
-    public void writePacketId(NetOutput out, int packetId) throws IOException {
-        out.writeByte(packetId);
+    public PluginProtocol getProtocol() {
+        return FMLHSProtocol.INSTANCE;
     }
 }

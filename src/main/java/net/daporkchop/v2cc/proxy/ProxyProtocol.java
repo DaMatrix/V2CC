@@ -20,6 +20,7 @@
 
 package net.daporkchop.v2cc.proxy;
 
+import com.github.steveice10.mc.auth.exception.request.RequestException;
 import com.github.steveice10.mc.protocol.MinecraftConstants;
 import com.github.steveice10.mc.protocol.MinecraftProtocol;
 import com.github.steveice10.mc.protocol.data.SubProtocol;
@@ -44,8 +45,18 @@ public class ProxyProtocol extends MinecraftProtocol {
     @NonNull
     protected final Proxy proxy;
 
-    public ProxyProtocol(@NonNull Proxy proxy, @NonNull String username) {
+    public ProxyProtocol(@NonNull Proxy proxy, String username) {
         super(username);
+
+        this.proxy = proxy;
+    }
+
+    /**
+     * @deprecated only exists for debug purposes, should probably be removed later
+     */
+    @Deprecated
+    public ProxyProtocol(@NonNull Proxy proxy, String username, String password) throws RequestException {
+        super(username, password);
 
         this.proxy = proxy;
     }

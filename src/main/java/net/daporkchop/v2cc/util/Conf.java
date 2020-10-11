@@ -46,6 +46,12 @@ public class Conf {
     })
     public Server server = new Server();
 
+    @Config.Comment({
+            "Debugging options.",
+            "You can safely ignore this section unless you know what you're doing."
+    })
+    public Debug debug = new Debug();
+
     @NoArgsConstructor(access = AccessLevel.PRIVATE)
     @ToString
     public static final class Client {
@@ -78,7 +84,7 @@ public class Conf {
             public int port = 1080;
 
             public java.net.Proxy toJavaProxy() {
-                if (this.use)   {
+                if (this.use) {
                     return new java.net.Proxy(java.net.Proxy.Type.SOCKS, new InetSocketAddress(this.host, this.port));
                 } else {
                     return null;
@@ -116,6 +122,22 @@ public class Conf {
 
             @Config.Comment("The TCP port number to bind to.")
             public int port = 25566;
+        }
+    }
+
+    @NoArgsConstructor(access = AccessLevel.PRIVATE)
+    @ToString
+    public static final class Debug {
+        public boolean authenticateBackendConnections = false;
+
+        public Credentials credentials = new Credentials();
+
+        @NoArgsConstructor(access = AccessLevel.PRIVATE)
+        @ToString
+        public static final class Credentials {
+            public String username = "user@example.com";
+
+            public String password = "password";
         }
     }
 }

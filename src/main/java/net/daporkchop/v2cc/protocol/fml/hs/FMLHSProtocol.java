@@ -18,34 +18,33 @@
  *
  */
 
-package net.daporkchop.v2cc.client;
+package net.daporkchop.v2cc.protocol.fml.hs;
 
-import com.github.steveice10.packetlib.Client;
-import lombok.Getter;
-import lombok.NonNull;
-import net.daporkchop.v2cc.Proxy;
-import net.daporkchop.v2cc.proxy.Player;
-import net.daporkchop.v2cc.proxy.ProxyProtocol;
-
-import static net.daporkchop.v2cc.util.Constants.*;
+import net.daporkchop.v2cc.protocol.fml.AbstractFMLProtocol;
+import net.daporkchop.v2cc.protocol.fml.hs.packet.HandshakeAckPacket;
+import net.daporkchop.v2cc.protocol.fml.hs.packet.ModListPacket;
+import net.daporkchop.v2cc.protocol.fml.hs.packet.client.ClientHelloPacket;
+import net.daporkchop.v2cc.protocol.fml.hs.packet.server.HandshakeResetPacket;
+import net.daporkchop.v2cc.protocol.fml.hs.packet.server.RegistryDataPacket;
+import net.daporkchop.v2cc.protocol.fml.hs.packet.server.ServerHelloPacket;
 
 /**
  * @author DaPorkchop_
  */
-@Getter
-public class CCClient extends Client {
-    protected final Proxy proxy;
-    protected final Player player;
+public class FMLHSProtocol extends AbstractFMLProtocol {
+    public static final FMLHSProtocol INSTANCE = new FMLHSProtocol();
 
-    @SuppressWarnings("deprecation")
-    public CCClient(@NonNull Proxy proxy, @NonNull Player player) {
-        super(proxy.config().client.backend.host, proxy.config().client.backend.port,
-                proxy.config().debug.authenticateBackendConnections
-                        ? unsafe_call(() -> new ProxyProtocol(proxy, proxy.config().debug.credentials.username, proxy.config().debug.credentials.password))
-                        : new ProxyProtocol(proxy, player.packetLoginStart().getUsername()),
-                proxy.sessionFactory());
+    protected FMLHSProtocol() {
+        super("FML|HS");
+    }
 
-        this.proxy = proxy;
-        this.player = player;
+    @Override
+    protected void registerPackets() {
+        this.registerIncoming(0, ServerHelloPacket.class);
+        this.registerOutgoing(1, ClientHelloPacket.class);
+        this.register(2, ModListPacket.class);
+        this.registerIncoming(3, RegistryDataPacket.class);
+        this.registerIncoming(254, HandshakeResetPacket.class);
+        this.register(255, HandshakeAckPacket.class);
     }
 }

@@ -18,23 +18,30 @@
  *
  */
 
-package net.daporkchop.v2cc.client.fml.hs.packet.server;
+package net.daporkchop.v2cc.protocol.fml;
 
-import com.github.steveice10.mc.protocol.packet.MinecraftPacket;
 import com.github.steveice10.packetlib.io.NetInput;
 import com.github.steveice10.packetlib.io.NetOutput;
+import lombok.AccessLevel;
+import lombok.NoArgsConstructor;
+import net.daporkchop.v2cc.protocol.PluginPacketHeader;
 
 import java.io.IOException;
 
 /**
  * @author DaPorkchop_
  */
-public class HandshakeResetPacket extends MinecraftPacket {
+@NoArgsConstructor(access = AccessLevel.PRIVATE)
+final class FMLPacketHeader extends PluginPacketHeader {
+    public static final FMLPacketHeader INSTANCE = new FMLPacketHeader();
+
     @Override
-    public void read(NetInput in) throws IOException {
+    public int readPacketId(NetInput in) throws IOException {
+        return in.readUnsignedByte();
     }
 
     @Override
-    public void write(NetOutput out) throws IOException {
+    public void writePacketId(NetOutput out, int packetId) throws IOException {
+        out.writeByte(packetId);
     }
 }

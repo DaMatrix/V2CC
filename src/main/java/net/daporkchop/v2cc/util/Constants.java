@@ -20,10 +20,18 @@
 
 package net.daporkchop.v2cc.util;
 
+import lombok.NonNull;
 import lombok.experimental.UtilityClass;
 import net.daporkchop.lib.logging.LogAmount;
 import net.daporkchop.lib.logging.Logger;
 import net.daporkchop.lib.logging.Logging;
+import net.daporkchop.lib.unsafe.PUnsafe;
+
+import java.util.Arrays;
+import java.util.Collection;
+import java.util.Collections;
+import java.util.List;
+import java.util.concurrent.Callable;
 
 /**
  * @author DaPorkchop_
@@ -38,4 +46,21 @@ public class Constants {
             .setLogAmount(LogAmount.DEBUG);
 
     public static final String FLAG_PLAYER = "v2cc_player";
+
+    public static final List<String> EXPECTED_SERVER_PLUGIN_CHANNELS = Collections.unmodifiableList(Arrays.asList(
+            "FML",
+            "FML|HS",
+            "FML|MP",
+            "FORGE",
+            "cubicchunks"
+    ));
+
+    public <T> T unsafe_call(@NonNull Callable<T> function) {
+        try {
+            return function.call();
+        } catch (Exception e) {
+            PUnsafe.throwException(e);
+            throw new AssertionError(e);
+        }
+    }
 }

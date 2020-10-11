@@ -18,34 +18,25 @@
  *
  */
 
-package net.daporkchop.v2cc.client;
+package net.daporkchop.v2cc.util;
 
-import com.github.steveice10.packetlib.Client;
-import lombok.Getter;
+import com.github.steveice10.packetlib.packet.Packet;
 import lombok.NonNull;
-import net.daporkchop.v2cc.Proxy;
 import net.daporkchop.v2cc.proxy.Player;
-import net.daporkchop.v2cc.proxy.ProxyProtocol;
-
-import static net.daporkchop.v2cc.util.Constants.*;
 
 /**
+ * Handles incoming packets.
+ *
  * @author DaPorkchop_
  */
-@Getter
-public class CCClient extends Client {
-    protected final Proxy proxy;
-    protected final Player player;
-
-    @SuppressWarnings("deprecation")
-    public CCClient(@NonNull Proxy proxy, @NonNull Player player) {
-        super(proxy.config().client.backend.host, proxy.config().client.backend.port,
-                proxy.config().debug.authenticateBackendConnections
-                        ? unsafe_call(() -> new ProxyProtocol(proxy, proxy.config().debug.credentials.username, proxy.config().debug.credentials.password))
-                        : new ProxyProtocol(proxy, player.packetLoginStart().getUsername()),
-                proxy.sessionFactory());
-
-        this.proxy = proxy;
-        this.player = player;
-    }
+@FunctionalInterface
+public interface PacketHandler<P extends Packet> {
+    /**
+     * Handles the given packet.
+     *
+     * @param player the player that the packet was received for
+     * @param packet the packet that was received
+     * @return the next packet handler, or {@code null} if the handler should remain unchanged
+     */
+    PacketHandler<?> handle(@NonNull Player player, @NonNull P packet);
 }

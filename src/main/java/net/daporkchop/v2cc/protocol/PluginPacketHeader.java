@@ -18,34 +18,40 @@
  *
  */
 
-package net.daporkchop.v2cc.client;
+package net.daporkchop.v2cc.protocol;
 
-import com.github.steveice10.packetlib.Client;
-import lombok.Getter;
-import lombok.NonNull;
-import net.daporkchop.v2cc.Proxy;
-import net.daporkchop.v2cc.proxy.Player;
-import net.daporkchop.v2cc.proxy.ProxyProtocol;
+import com.github.steveice10.packetlib.io.NetInput;
+import com.github.steveice10.packetlib.io.NetOutput;
+import com.github.steveice10.packetlib.packet.PacketHeader;
 
-import static net.daporkchop.v2cc.util.Constants.*;
+import java.io.IOException;
 
 /**
  * @author DaPorkchop_
  */
-@Getter
-public class CCClient extends Client {
-    protected final Proxy proxy;
-    protected final Player player;
+public abstract class PluginPacketHeader implements PacketHeader {
+    @Override
+    public boolean isLengthVariable() {
+        throw new UnsupportedOperationException();
+    }
 
-    @SuppressWarnings("deprecation")
-    public CCClient(@NonNull Proxy proxy, @NonNull Player player) {
-        super(proxy.config().client.backend.host, proxy.config().client.backend.port,
-                proxy.config().debug.authenticateBackendConnections
-                        ? unsafe_call(() -> new ProxyProtocol(proxy, proxy.config().debug.credentials.username, proxy.config().debug.credentials.password))
-                        : new ProxyProtocol(proxy, player.packetLoginStart().getUsername()),
-                proxy.sessionFactory());
+    @Override
+    public int getLengthSize() {
+        throw new UnsupportedOperationException();
+    }
 
-        this.proxy = proxy;
-        this.player = player;
+    @Override
+    public int getLengthSize(int length) {
+        throw new UnsupportedOperationException();
+    }
+
+    @Override
+    public int readLength(NetInput in, int available) throws IOException {
+        throw new UnsupportedOperationException();
+    }
+
+    @Override
+    public void writeLength(NetOutput out, int length) throws IOException {
+        throw new UnsupportedOperationException();
     }
 }

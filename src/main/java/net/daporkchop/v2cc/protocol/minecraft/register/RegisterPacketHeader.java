@@ -18,52 +18,30 @@
  *
  */
 
-package net.daporkchop.v2cc.client.fml;
+package net.daporkchop.v2cc.protocol.minecraft.register;
 
-import com.github.steveice10.packetlib.Client;
-import com.github.steveice10.packetlib.Server;
-import com.github.steveice10.packetlib.Session;
-import com.github.steveice10.packetlib.crypt.PacketEncryption;
-import com.github.steveice10.packetlib.packet.PacketHeader;
-import com.github.steveice10.packetlib.packet.PacketProtocol;
+import com.github.steveice10.packetlib.io.NetInput;
+import com.github.steveice10.packetlib.io.NetOutput;
+import lombok.AccessLevel;
+import lombok.NoArgsConstructor;
+import net.daporkchop.v2cc.protocol.PluginPacketHeader;
+
+import java.io.IOException;
 
 /**
- * Abstract implementation of {@link PacketProtocol} for plugin channels.
- *
  * @author DaPorkchop_
  */
-public abstract class FMLProtocol extends PacketProtocol {
-    public FMLProtocol() {
-        this.registerPackets();
-    }
-
-    /**
-     * Actually registers the packets used by this protocol.
-     */
-    protected abstract void registerPackets();
+@NoArgsConstructor(access = AccessLevel.PRIVATE)
+final class RegisterPacketHeader extends PluginPacketHeader {
+    public static final RegisterPacketHeader INSTANCE = new RegisterPacketHeader();
 
     @Override
-    public final String getSRVRecordPrefix() {
-        throw new UnsupportedOperationException();
+    public int readPacketId(NetInput in) throws IOException {
+        return 0;
     }
 
     @Override
-    public PacketHeader getPacketHeader() {
-        return FMLPacketHeader.INSTANCE;
-    }
-
-    @Override
-    public PacketEncryption getEncryption() {
-        throw new UnsupportedOperationException();
-    }
-
-    @Override
-    public void newClientSession(Client client, Session session) {
-        throw new UnsupportedOperationException();
-    }
-
-    @Override
-    public void newServerSession(Server server, Session session) {
-        throw new UnsupportedOperationException();
+    public void writePacketId(NetOutput out, int packetId) throws IOException {
+        //no-op
     }
 }

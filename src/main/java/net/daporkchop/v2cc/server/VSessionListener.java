@@ -48,6 +48,7 @@ public class VSessionListener extends ServerListener {
     public void packetReceived(PacketReceivedEvent event) {
         if (event.getPacket() instanceof HandshakePacket) {
             if (((HandshakePacket) event.getPacket()).getIntent() == HandshakeIntent.LOGIN) {
+                //TODO: check for \0FML\0 host suffix and serve as a plain network proxy if the player is forge
                 this.player.packetHandshake(event.getPacket());
                 ((VServer) this.player.proxy().server()).playerCounter().increment();
             } else {
