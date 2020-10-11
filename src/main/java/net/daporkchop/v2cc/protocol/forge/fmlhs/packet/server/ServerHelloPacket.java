@@ -18,32 +18,49 @@
  *
  */
 
-package net.daporkchop.v2cc.protocol;
+package net.daporkchop.v2cc.protocol.forge.fmlhs.packet.server;
 
-import com.github.steveice10.mc.protocol.packet.MinecraftPacket;
 import com.github.steveice10.packetlib.io.NetInput;
 import com.github.steveice10.packetlib.io.NetOutput;
-import net.daporkchop.lib.common.misc.string.PStrings;
+import lombok.AccessLevel;
+import lombok.AllArgsConstructor;
+import lombok.Getter;
+import lombok.NoArgsConstructor;
+import lombok.Setter;
+import net.daporkchop.v2cc.protocol.PluginPacket;
+import net.daporkchop.v2cc.protocol.PluginProtocol;
+import net.daporkchop.v2cc.protocol.forge.fmlhs.FMLHSProtocol;
 
 import java.io.IOException;
 
 /**
  * @author DaPorkchop_
  */
-public abstract class PluginPacket extends MinecraftPacket {
-    @Override
-    public abstract void read(NetInput in) throws IOException;
+@NoArgsConstructor(access = AccessLevel.PRIVATE)
+@AllArgsConstructor
+@Setter
+@Getter
+public class ServerHelloPacket extends PluginPacket {
+    protected byte serverProtocolVersion;
+    protected int overrideDimension;
 
     @Override
-    public abstract void write(NetOutput out) throws IOException;
-
-    /**
-     * @return the {@link PluginProtocol} that this packet belongs to
-     */
-    public abstract PluginProtocol getProtocol();
+    public void read(NetInput in) throws IOException {
+        if ((this.serverProtocolVersion = in.readByte()) > 1) {
+            this.overrideDimension = in.readInt();
+        }
+    }
 
     @Override
-    public String toString() {
-        return PStrings.lightFormat("PluginMessagePacket(channel=%s, data=%s)", this.getProtocol().channelName(), super.toString());
+    public void write(NetOutput out) throws IOException {
+        out.writeByte(this.serverProtocolVersion);
+        if (this.serverProtocolVersion > 1) {
+            out.writeInt(this.overrideDimension);
+        }
+    }
+
+    @Override
+    public PluginProtocol getProtocol() {
+        return FMLHSProtocol.INSTANCE;
     }
 }

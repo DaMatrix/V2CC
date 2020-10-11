@@ -18,30 +18,30 @@
  *
  */
 
-package net.daporkchop.v2cc.protocol.fml;
+package net.daporkchop.v2cc.protocol.forge.fmlhs.packet.server;
 
 import com.github.steveice10.packetlib.io.NetInput;
 import com.github.steveice10.packetlib.io.NetOutput;
-import lombok.AccessLevel;
-import lombok.NoArgsConstructor;
-import net.daporkchop.v2cc.protocol.PluginPacketHeader;
+import net.daporkchop.v2cc.protocol.PluginPacket;
+import net.daporkchop.v2cc.protocol.PluginProtocol;
+import net.daporkchop.v2cc.protocol.forge.fmlhs.FMLHSProtocol;
 
 import java.io.IOException;
 
 /**
  * @author DaPorkchop_
  */
-@NoArgsConstructor(access = AccessLevel.PRIVATE)
-final class FMLPacketHeader extends PluginPacketHeader {
-    public static final FMLPacketHeader INSTANCE = new FMLPacketHeader();
-
+public class HandshakeResetPacket extends PluginPacket {
     @Override
-    public int readPacketId(NetInput in) throws IOException {
-        return in.readUnsignedByte();
+    public void read(NetInput in) throws IOException {
     }
 
     @Override
-    public void writePacketId(NetOutput out, int packetId) throws IOException {
-        out.writeByte(packetId);
+    public void write(NetOutput out) throws IOException {
+    }
+
+    @Override
+    public PluginProtocol getProtocol() {
+        return FMLHSProtocol.INSTANCE;
     }
 }

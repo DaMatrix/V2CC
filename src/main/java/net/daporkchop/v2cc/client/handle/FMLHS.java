@@ -21,12 +21,15 @@
 package net.daporkchop.v2cc.client.handle;
 
 import com.github.steveice10.mc.protocol.packet.MinecraftPacket;
-import com.github.steveice10.packetlib.packet.Packet;
 import lombok.NonNull;
-import net.daporkchop.v2cc.protocol.fml.hs.FMLHSProtocol;
-import net.daporkchop.v2cc.protocol.fml.hs.packet.ModListPacket;
-import net.daporkchop.v2cc.protocol.fml.hs.packet.client.ClientHelloPacket;
-import net.daporkchop.v2cc.protocol.fml.hs.packet.server.ServerHelloPacket;
+import net.daporkchop.v2cc.protocol.forge.fmlhs.FMLHSProtocol;
+import net.daporkchop.v2cc.protocol.forge.fmlhs.packet.ModListPacket;
+import net.daporkchop.v2cc.protocol.forge.fmlhs.packet.client.ClientHandshakeAckPacket;
+import net.daporkchop.v2cc.protocol.forge.fmlhs.packet.client.ClientHelloPacket;
+import net.daporkchop.v2cc.protocol.forge.fmlhs.packet.server.RegistryDataPacket;
+import net.daporkchop.v2cc.protocol.forge.fmlhs.packet.server.ServerHandshakeAckPacket;
+import net.daporkchop.v2cc.protocol.forge.fmlhs.packet.server.ServerHelloPacket;
+import net.daporkchop.v2cc.protocol.forge.forge.ForgeProtocol;
 import net.daporkchop.v2cc.protocol.minecraft.register.packet.RegisterPacket;
 import net.daporkchop.v2cc.proxy.Player;
 import net.daporkchop.v2cc.util.PacketHandler;
@@ -60,12 +63,13 @@ public enum FMLHS implements PacketHandler<MinecraftPacket> {
                 player.registerPlugin(FMLHSProtocol.INSTANCE);
                 return SERVER_HELLO;
             }*/
-            if (pck instanceof RegisterPacket)   {
+            if (pck instanceof RegisterPacket) {
                 RegisterPacket packet = (RegisterPacket) pck;
 
                 checkState(packet.channels().containsAll(EXPECTED_SERVER_PLUGIN_CHANNELS), "register channels (received=%s)", packet.channels());
 
                 player.registerPlugin(FMLHSProtocol.INSTANCE);
+                player.registerPlugin(ForgeProtocol.INSTANCE);
                 return SERVER_HELLO;
             }
             return null;
@@ -74,16 +78,71 @@ public enum FMLHS implements PacketHandler<MinecraftPacket> {
     SERVER_HELLO {
         @Override
         public PacketHandler<?> handle(@NonNull Player player, @NonNull MinecraftPacket pck) {
-            if (pck instanceof ServerHelloPacket)   {
-                ServerHelloPacket packet = (ServerHelloPacket) pck;
+            checkArg(pck instanceof ServerHelloPacket, pck);
+            ServerHelloPacket packet = (ServerHelloPacket) pck;
 
-                player.clientSession().send(new RegisterPacket(EXPECTED_SERVER_PLUGIN_CHANNELS));
-                player.clientSession().send(new ClientHelloPacket(packet.serverProtocolVersion()));
+            player.clientSession().send(new RegisterPacket(EXPECTED_SERVER_PLUGIN_CHANNELS));
+            player.clientSession().send(new ClientHelloPacket(packet.serverProtocolVersion()));
 
-                Map<String, String> mods = new HashMap<>();
-                player.clientSession().send(new ModListPacket(mods));
+            Map<String, String> mods = new HashMap<>();
+            mods.put("cubicchunks", player.proxy().config().debug.cubicChunksVersion);
+            player.clientSession().send(new ModListPacket(mods));
+            return MOD_LIST;
+        }
+    },
+    MOD_LIST {
+        @Override
+        public PacketHandler<?> handle(@NonNull Player player, @NonNull MinecraftPacket pck) {
+            checkArg(pck instanceof ModListPacket, pck);
+            ModListPacket packet = (ModListPacket) pck;
+
+            //let's just assume the server has a compatible mod list
+            LOG.info("Backend server mods: %s", packet.mods());
+
+            player.clientSession().send(new ClientHandshakeAckPacket(ClientHandshakeAckPacket.State.WAITINGSERVERDATA));
+            return REGISTRY;
+        }
+    },
+    REGISTRY {
+        @Override
+        public PacketHandler<?> handle(@NonNull Player player, @NonNull MinecraftPacket pck) {
+            checkArg(pck instanceof RegistryDataPacket, pck);
+            RegistryDataPacket packet = (RegistryDataPacket) pck;
+
+            if (packet.hasMore())   {
+                return null; //continue waiting for the last registry packet
             }
-            return null;
+
+            player.clientSession().send(new ClientHandshakeAckPacket(ClientHandshakeAckPacket.State.WAITINGSERVERCOMPLETE));
+            return ACK_0;
+        }
+    },
+    ACK_0 {
+        @Override
+        public PacketHandler<?> handle(@NonNull Player player, @NonNull MinecraftPacket pck) {
+            checkArg(pck instanceof ServerHandshakeAckPacket, pck);
+            ServerHandshakeAckPacket packet = (ServerHandshakeAckPacket) pck;
+            checkArg(packet.phase() == ServerHandshakeAckPacket.State.WAITINGCACK, packet.phase());
+
+            player.clientSession().send(new ClientHandshakeAckPacket(ClientHandshakeAckPacket.State.PENDINGCOMPLETE));
+            return ACK_1;
+        }
+    },
+    ACK_1 {
+        @Override
+        public PacketHandler<?> handle(@NonNull Player player, @NonNull MinecraftPacket pck) {
+            checkArg(pck instanceof ServerHandshakeAckPacket, pck);
+            ServerHandshakeAckPacket packet = (ServerHandshakeAckPacket) pck;
+            checkArg(packet.phase() == ServerHandshakeAckPacket.State.COMPLETE, packet.phase());
+
+            player.clientSession().send(new ClientHandshakeAckPacket(ClientHandshakeAckPacket.State.COMPLETE));
+            return DONE;
+        }
+    },
+    DONE {
+        @Override
+        public PacketHandler<?> handle(@NonNull Player player, @NonNull MinecraftPacket pck) {
+            return null; //no-op
         }
     };
 

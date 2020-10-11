@@ -18,7 +18,7 @@
  *
  */
 
-package net.daporkchop.v2cc.protocol.fml.hs.packet.server;
+package net.daporkchop.v2cc.protocol.forge.fmlhs.packet.server;
 
 import com.github.steveice10.packetlib.io.NetInput;
 import com.github.steveice10.packetlib.io.NetOutput;
@@ -31,7 +31,7 @@ import net.daporkchop.lib.common.function.io.IOBiConsumer;
 import net.daporkchop.lib.common.function.io.IOConsumer;
 import net.daporkchop.v2cc.protocol.PluginPacket;
 import net.daporkchop.v2cc.protocol.PluginProtocol;
-import net.daporkchop.v2cc.protocol.fml.hs.FMLHSProtocol;
+import net.daporkchop.v2cc.protocol.forge.fmlhs.FMLHSProtocol;
 
 import java.io.IOException;
 import java.util.HashMap;

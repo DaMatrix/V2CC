@@ -132,6 +132,13 @@ public class Conf {
 
         public Credentials credentials = new Credentials();
 
+        @Config.Comment({
+                "The version of Cubic Chunks to tell the server we have installed.",
+                "This can be changed to allow connections to servers with a different Cubic Chunks version, but doing so will",
+                "likely cause many issues."
+        })
+        public String cubicChunksVersion = "1.12.2-0.0.1100.0-SNAPSHOT";
+
         @NoArgsConstructor(access = AccessLevel.PRIVATE)
         @ToString
         public static final class Credentials {

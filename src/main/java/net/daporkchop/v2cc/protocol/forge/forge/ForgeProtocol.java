@@ -18,33 +18,25 @@
  *
  */
 
-package net.daporkchop.v2cc.protocol.fml.hs;
+package net.daporkchop.v2cc.protocol.forge.forge;
 
-import net.daporkchop.v2cc.protocol.fml.AbstractFMLProtocol;
-import net.daporkchop.v2cc.protocol.fml.hs.packet.HandshakeAckPacket;
-import net.daporkchop.v2cc.protocol.fml.hs.packet.ModListPacket;
-import net.daporkchop.v2cc.protocol.fml.hs.packet.client.ClientHelloPacket;
-import net.daporkchop.v2cc.protocol.fml.hs.packet.server.HandshakeResetPacket;
-import net.daporkchop.v2cc.protocol.fml.hs.packet.server.RegistryDataPacket;
-import net.daporkchop.v2cc.protocol.fml.hs.packet.server.ServerHelloPacket;
+import net.daporkchop.v2cc.protocol.forge.AbstractForgeProtocol;
+import net.daporkchop.v2cc.protocol.forge.forge.packet.DimensionRegisterPacket;
+import net.daporkchop.v2cc.protocol.forge.forge.packet.FluidIdMapPacket;
 
 /**
  * @author DaPorkchop_
  */
-public class FMLHSProtocol extends AbstractFMLProtocol {
-    public static final FMLHSProtocol INSTANCE = new FMLHSProtocol();
+public class ForgeProtocol extends AbstractForgeProtocol {
+    public static final ForgeProtocol INSTANCE = new ForgeProtocol();
 
-    protected FMLHSProtocol() {
-        super("FML|HS");
+    protected ForgeProtocol() {
+        super("FORGE");
     }
 
     @Override
     protected void registerPackets() {
-        this.registerIncoming(0, ServerHelloPacket.class);
-        this.registerOutgoing(1, ClientHelloPacket.class);
-        this.register(2, ModListPacket.class);
-        this.registerIncoming(3, RegistryDataPacket.class);
-        this.registerIncoming(254, HandshakeResetPacket.class);
-        this.register(255, HandshakeAckPacket.class);
+        this.register(1, DimensionRegisterPacket.class);
+        this.register(2, FluidIdMapPacket.class);
     }
 }

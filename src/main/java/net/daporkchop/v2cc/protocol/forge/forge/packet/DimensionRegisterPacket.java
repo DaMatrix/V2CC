@@ -18,30 +18,51 @@
  *
  */
 
-package net.daporkchop.v2cc.protocol.fml.hs.packet.server;
+package net.daporkchop.v2cc.protocol.forge.forge.packet;
 
 import com.github.steveice10.packetlib.io.NetInput;
 import com.github.steveice10.packetlib.io.NetOutput;
+import lombok.AccessLevel;
+import lombok.AllArgsConstructor;
+import lombok.Getter;
+import lombok.NoArgsConstructor;
+import lombok.Setter;
 import net.daporkchop.v2cc.protocol.PluginPacket;
 import net.daporkchop.v2cc.protocol.PluginProtocol;
-import net.daporkchop.v2cc.protocol.fml.hs.FMLHSProtocol;
+import net.daporkchop.v2cc.protocol.forge.forge.ForgeProtocol;
 
 import java.io.IOException;
+import java.nio.charset.StandardCharsets;
 
 /**
  * @author DaPorkchop_
  */
-public class HandshakeResetPacket extends PluginPacket {
+@NoArgsConstructor(access = AccessLevel.PRIVATE)
+@AllArgsConstructor
+@Setter
+@Getter
+public class DimensionRegisterPacket extends PluginPacket {
+    protected int dimensionId;
+    protected String providerId;
+
     @Override
     public void read(NetInput in) throws IOException {
+        this.dimensionId = in.readInt();
+        this.providerId = new String(in.readBytes(in.readUnsignedShort()), StandardCharsets.UTF_8);
     }
 
     @Override
     public void write(NetOutput out) throws IOException {
+        out.writeInt(this.dimensionId);
+
+        //why doesn't this field use an ordinary VarInt length prefix?!?
+        byte[] data = this.providerId.getBytes(StandardCharsets.UTF_8);
+        out.writeShort(data.length);
+        out.writeBytes(data);
     }
 
     @Override
     public PluginProtocol getProtocol() {
-        return FMLHSProtocol.INSTANCE;
+        return ForgeProtocol.INSTANCE;
     }
 }

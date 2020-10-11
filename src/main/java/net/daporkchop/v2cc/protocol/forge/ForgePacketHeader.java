@@ -18,53 +18,30 @@
  *
  */
 
-package net.daporkchop.v2cc.protocol.fml.hs.packet;
+package net.daporkchop.v2cc.protocol.forge;
 
 import com.github.steveice10.packetlib.io.NetInput;
 import com.github.steveice10.packetlib.io.NetOutput;
 import lombok.AccessLevel;
-import lombok.AllArgsConstructor;
-import lombok.Getter;
 import lombok.NoArgsConstructor;
-import lombok.Setter;
-import net.daporkchop.lib.common.function.io.IOBiConsumer;
-import net.daporkchop.v2cc.protocol.PluginPacket;
-import net.daporkchop.v2cc.protocol.PluginProtocol;
-import net.daporkchop.v2cc.protocol.fml.hs.FMLHSProtocol;
+import net.daporkchop.v2cc.protocol.PluginPacketHeader;
 
 import java.io.IOException;
-import java.util.HashMap;
-import java.util.Map;
 
 /**
  * @author DaPorkchop_
  */
 @NoArgsConstructor(access = AccessLevel.PRIVATE)
-@AllArgsConstructor
-@Setter
-@Getter
-public class ModListPacket extends PluginPacket {
-    protected Map<String, String> mods; //key: modid, value: version
+final class ForgePacketHeader extends PluginPacketHeader {
+    public static final ForgePacketHeader INSTANCE = new ForgePacketHeader();
 
     @Override
-    public void read(NetInput in) throws IOException {
-        this.mods = new HashMap<>();
-        for (int i = in.readVarInt() - 1; i >= 0; i--) {
-            this.mods.put(in.readString(), in.readString());
-        }
+    public int readPacketId(NetInput in) throws IOException {
+        return in.readUnsignedByte();
     }
 
     @Override
-    public void write(NetOutput out) throws IOException {
-        out.writeVarInt(this.mods.size());
-        this.mods.forEach((IOBiConsumer<String, String>) (modid, version) -> {
-            out.writeString(modid);
-            out.writeString(version);
-        });
-    }
-
-    @Override
-    public PluginProtocol getProtocol() {
-        return FMLHSProtocol.INSTANCE;
+    public void writePacketId(NetOutput out, int packetId) throws IOException {
+        out.writeByte(packetId);
     }
 }

@@ -18,7 +18,7 @@
  *
  */
 
-package net.daporkchop.v2cc.protocol.fml.hs.packet.server;
+package net.daporkchop.v2cc.protocol.forge.fmlhs.packet.client;
 
 import com.github.steveice10.packetlib.io.NetInput;
 import com.github.steveice10.packetlib.io.NetOutput;
@@ -29,7 +29,7 @@ import lombok.NoArgsConstructor;
 import lombok.Setter;
 import net.daporkchop.v2cc.protocol.PluginPacket;
 import net.daporkchop.v2cc.protocol.PluginProtocol;
-import net.daporkchop.v2cc.protocol.fml.hs.FMLHSProtocol;
+import net.daporkchop.v2cc.protocol.forge.fmlhs.FMLHSProtocol;
 
 import java.io.IOException;
 
@@ -40,23 +40,17 @@ import java.io.IOException;
 @AllArgsConstructor
 @Setter
 @Getter
-public class ServerHelloPacket extends PluginPacket {
+public class ClientHelloPacket extends PluginPacket {
     protected byte serverProtocolVersion;
-    protected int overrideDimension;
 
     @Override
     public void read(NetInput in) throws IOException {
-        if ((this.serverProtocolVersion = in.readByte()) > 1) {
-            this.overrideDimension = in.readInt();
-        }
+        this.serverProtocolVersion = in.readByte();
     }
 
     @Override
     public void write(NetOutput out) throws IOException {
         out.writeByte(this.serverProtocolVersion);
-        if (this.serverProtocolVersion > 1) {
-            out.writeInt(this.overrideDimension);
-        }
     }
 
     @Override

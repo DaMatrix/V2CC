@@ -18,32 +18,53 @@
  *
  */
 
-package net.daporkchop.v2cc.protocol;
+package net.daporkchop.v2cc.protocol.forge.fmlhs.packet;
 
-import com.github.steveice10.mc.protocol.packet.MinecraftPacket;
 import com.github.steveice10.packetlib.io.NetInput;
 import com.github.steveice10.packetlib.io.NetOutput;
-import net.daporkchop.lib.common.misc.string.PStrings;
+import lombok.AccessLevel;
+import lombok.AllArgsConstructor;
+import lombok.Getter;
+import lombok.NoArgsConstructor;
+import lombok.Setter;
+import net.daporkchop.lib.common.function.io.IOBiConsumer;
+import net.daporkchop.v2cc.protocol.PluginPacket;
+import net.daporkchop.v2cc.protocol.PluginProtocol;
+import net.daporkchop.v2cc.protocol.forge.fmlhs.FMLHSProtocol;
 
 import java.io.IOException;
+import java.util.HashMap;
+import java.util.Map;
 
 /**
  * @author DaPorkchop_
  */
-public abstract class PluginPacket extends MinecraftPacket {
-    @Override
-    public abstract void read(NetInput in) throws IOException;
+@NoArgsConstructor(access = AccessLevel.PRIVATE)
+@AllArgsConstructor
+@Setter
+@Getter
+public class ModListPacket extends PluginPacket {
+    protected Map<String, String> mods; //key: modid, value: version
 
     @Override
-    public abstract void write(NetOutput out) throws IOException;
-
-    /**
-     * @return the {@link PluginProtocol} that this packet belongs to
-     */
-    public abstract PluginProtocol getProtocol();
+    public void read(NetInput in) throws IOException {
+        this.mods = new HashMap<>();
+        for (int i = in.readVarInt() - 1; i >= 0; i--) {
+            this.mods.put(in.readString(), in.readString());
+        }
+    }
 
     @Override
-    public String toString() {
-        return PStrings.lightFormat("PluginMessagePacket(channel=%s, data=%s)", this.getProtocol().channelName(), super.toString());
+    public void write(NetOutput out) throws IOException {
+        out.writeVarInt(this.mods.size());
+        this.mods.forEach((IOBiConsumer<String, String>) (modid, version) -> {
+            out.writeString(modid);
+            out.writeString(version);
+        });
+    }
+
+    @Override
+    public PluginProtocol getProtocol() {
+        return FMLHSProtocol.INSTANCE;
     }
 }

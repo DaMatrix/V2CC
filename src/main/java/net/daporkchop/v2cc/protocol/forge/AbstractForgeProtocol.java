@@ -18,32 +18,25 @@
  *
  */
 
-package net.daporkchop.v2cc.protocol;
+package net.daporkchop.v2cc.protocol.forge;
 
-import com.github.steveice10.mc.protocol.packet.MinecraftPacket;
-import com.github.steveice10.packetlib.io.NetInput;
-import com.github.steveice10.packetlib.io.NetOutput;
-import net.daporkchop.lib.common.misc.string.PStrings;
-
-import java.io.IOException;
+import com.github.steveice10.packetlib.packet.PacketHeader;
+import com.github.steveice10.packetlib.packet.PacketProtocol;
+import lombok.NonNull;
+import net.daporkchop.v2cc.protocol.PluginProtocol;
 
 /**
+ * Abstract implementation of {@link PacketProtocol} for plugin channels.
+ *
  * @author DaPorkchop_
  */
-public abstract class PluginPacket extends MinecraftPacket {
-    @Override
-    public abstract void read(NetInput in) throws IOException;
+public abstract class AbstractForgeProtocol extends PluginProtocol {
+    public AbstractForgeProtocol(@NonNull String channelName) {
+        super(channelName);
+    }
 
     @Override
-    public abstract void write(NetOutput out) throws IOException;
-
-    /**
-     * @return the {@link PluginProtocol} that this packet belongs to
-     */
-    public abstract PluginProtocol getProtocol();
-
-    @Override
-    public String toString() {
-        return PStrings.lightFormat("PluginMessagePacket(channel=%s, data=%s)", this.getProtocol().channelName(), super.toString());
+    public PacketHeader getPacketHeader() {
+        return ForgePacketHeader.INSTANCE;
     }
 }

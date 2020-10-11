@@ -100,6 +100,8 @@ public class CCSessionListener extends ClientListener {
         //check if the packet is a plugin message and if so, encode it as such
         this.player.pluginChannels().forEach((channel, protocol) -> {
             if (protocol.hasOutgoing(event.getPacket().getClass())) {
+                LOG.debug("cc sent packet: %s", event.<Packet>getPacket());
+
                 ByteBuf buf = ByteBufAllocator.DEFAULT.buffer();
                 try {
                     //encode packet body
@@ -121,7 +123,10 @@ public class CCSessionListener extends ClientListener {
 
     @Override
     public void packetSent(PacketSentEvent event) {
-        LOG.debug("cc sent packet: %s", event.<Packet>getPacket());
+        Packet pck = event.getPacket();
+        if (!(pck instanceof ClientPluginMessagePacket && this.player.pluginChannels().containsKey(((ClientPluginMessagePacket) pck).getChannel()))) {
+            LOG.debug("cc sent packet: %s", pck);
+        }
     }
 
     @Override

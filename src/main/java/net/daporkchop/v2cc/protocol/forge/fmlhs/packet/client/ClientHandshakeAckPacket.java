@@ -18,7 +18,7 @@
  *
  */
 
-package net.daporkchop.v2cc.protocol.fml.hs.packet;
+package net.daporkchop.v2cc.protocol.forge.fmlhs.packet.client;
 
 import com.github.steveice10.packetlib.io.NetInput;
 import com.github.steveice10.packetlib.io.NetOutput;
@@ -29,7 +29,7 @@ import lombok.NoArgsConstructor;
 import lombok.Setter;
 import net.daporkchop.v2cc.protocol.PluginPacket;
 import net.daporkchop.v2cc.protocol.PluginProtocol;
-import net.daporkchop.v2cc.protocol.fml.hs.FMLHSProtocol;
+import net.daporkchop.v2cc.protocol.forge.fmlhs.FMLHSProtocol;
 
 import java.io.IOException;
 
@@ -40,21 +40,34 @@ import java.io.IOException;
 @AllArgsConstructor
 @Setter
 @Getter
-public class HandshakeAckPacket extends PluginPacket {
-    protected int phase;
+public class ClientHandshakeAckPacket extends PluginPacket {
+    protected State phase;
 
     @Override
     public void read(NetInput in) throws IOException {
-        this.phase = in.readUnsignedByte();
+        this.phase = State.VALUES[in.readUnsignedByte()];
     }
 
     @Override
     public void write(NetOutput out) throws IOException {
-        out.writeByte(this.phase);
+        out.writeByte(this.phase.ordinal());
     }
 
     @Override
     public PluginProtocol getProtocol() {
         return FMLHSProtocol.INSTANCE;
+    }
+
+    public enum State {
+        START,
+        HELLO,
+        WAITINGSERVERDATA,
+        WAITINGSERVERCOMPLETE,
+        PENDINGCOMPLETE,
+        COMPLETE,
+        DONE,
+        ERROR;
+
+        private static final State[] VALUES = values();
     }
 }

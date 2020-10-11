@@ -18,25 +18,35 @@
  *
  */
 
-package net.daporkchop.v2cc.protocol.fml;
+package net.daporkchop.v2cc.protocol.forge.fmlhs;
 
-import com.github.steveice10.packetlib.packet.PacketHeader;
-import com.github.steveice10.packetlib.packet.PacketProtocol;
-import lombok.NonNull;
-import net.daporkchop.v2cc.protocol.PluginProtocol;
+import net.daporkchop.v2cc.protocol.forge.AbstractForgeProtocol;
+import net.daporkchop.v2cc.protocol.forge.fmlhs.packet.ModListPacket;
+import net.daporkchop.v2cc.protocol.forge.fmlhs.packet.client.ClientHandshakeAckPacket;
+import net.daporkchop.v2cc.protocol.forge.fmlhs.packet.client.ClientHelloPacket;
+import net.daporkchop.v2cc.protocol.forge.fmlhs.packet.server.HandshakeResetPacket;
+import net.daporkchop.v2cc.protocol.forge.fmlhs.packet.server.RegistryDataPacket;
+import net.daporkchop.v2cc.protocol.forge.fmlhs.packet.server.ServerHandshakeAckPacket;
+import net.daporkchop.v2cc.protocol.forge.fmlhs.packet.server.ServerHelloPacket;
 
 /**
- * Abstract implementation of {@link PacketProtocol} for plugin channels.
- *
  * @author DaPorkchop_
  */
-public abstract class AbstractFMLProtocol extends PluginProtocol {
-    public AbstractFMLProtocol(@NonNull String channelName) {
-        super(channelName);
+public class FMLHSProtocol extends AbstractForgeProtocol {
+    public static final FMLHSProtocol INSTANCE = new FMLHSProtocol();
+
+    protected FMLHSProtocol() {
+        super("FML|HS");
     }
 
     @Override
-    public PacketHeader getPacketHeader() {
-        return FMLPacketHeader.INSTANCE;
+    protected void registerPackets() {
+        this.registerIncoming(0, ServerHelloPacket.class);
+        this.registerOutgoing(1, ClientHelloPacket.class);
+        this.register(2, ModListPacket.class);
+        this.registerIncoming(3, RegistryDataPacket.class);
+        this.registerIncoming(254, HandshakeResetPacket.class);
+        this.registerOutgoing(255, ClientHandshakeAckPacket.class);
+        this.registerIncoming(255, ServerHandshakeAckPacket.class);
     }
 }
