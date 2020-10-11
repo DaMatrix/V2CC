@@ -20,11 +20,12 @@
 
 package net.daporkchop.v2cc.protocol.forge.fmlmp;
 
+import com.github.steveice10.packetlib.packet.Packet;
 import com.github.steveice10.packetlib.packet.PacketHeader;
 import net.daporkchop.v2cc.protocol.NoPacketHeader;
 import net.daporkchop.v2cc.protocol.PluginProtocol;
-import net.daporkchop.v2cc.protocol.forge.AbstractForgeProtocol;
 import net.daporkchop.v2cc.protocol.forge.fmlmp.packet.MultipartPacket;
+import net.daporkchop.v2cc.util.PacketHandler;
 
 /**
  * @author DaPorkchop_
@@ -44,5 +45,10 @@ public class FMLMPProtocol extends PluginProtocol {
     @Override
     public PacketHeader getPacketHeader() {
         return NoPacketHeader.INSTANCE;
+    }
+
+    @Override
+    public PacketHandler<Packet> handler() {
+        return new FMLMPHandler();
     }
 }
