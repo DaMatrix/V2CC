@@ -23,6 +23,9 @@ package net.daporkchop.v2cc.protocol;
 import com.github.steveice10.mc.protocol.packet.MinecraftPacket;
 import com.github.steveice10.packetlib.io.NetInput;
 import com.github.steveice10.packetlib.io.NetOutput;
+import lombok.Getter;
+import lombok.NoArgsConstructor;
+import lombok.Setter;
 import net.daporkchop.lib.common.misc.string.PStrings;
 
 import java.io.IOException;
@@ -45,5 +48,26 @@ public abstract class PluginPacket extends MinecraftPacket {
     @Override
     public String toString() {
         return PStrings.lightFormat("PluginMessagePacket(channel=%s, data=%s)", this.getProtocol().channelName(), super.toString());
+    }
+
+    /**
+     * Implementation for a packet class with an unknown/unimplemented body.
+     *
+     * @author DaPorkchop_
+     */
+    @Getter
+    @Setter
+    public static abstract class Unknown extends PluginPacket {
+        protected byte[] data;
+
+        @Override
+        public void read(NetInput in) throws IOException {
+            this.data = in.readBytes(in.available());
+        }
+
+        @Override
+        public void write(NetOutput out) throws IOException {
+            out.writeBytes(this.data);
+        }
     }
 }

@@ -35,6 +35,7 @@ import com.github.steveice10.packetlib.event.session.PacketReceivedEvent;
 import com.github.steveice10.packetlib.event.session.PacketSendingEvent;
 import com.github.steveice10.packetlib.event.session.PacketSentEvent;
 import com.github.steveice10.packetlib.io.NetInput;
+import com.github.steveice10.packetlib.io.NetOutput;
 import com.github.steveice10.packetlib.packet.Packet;
 import com.github.steveice10.packetlib.packet.PacketProtocol;
 import com.github.steveice10.packetlib.tcp.io.ByteBufNetInput;
@@ -45,6 +46,7 @@ import io.netty.buffer.Unpooled;
 import lombok.NonNull;
 import lombok.RequiredArgsConstructor;
 import net.daporkchop.v2cc.client.handle.FMLHS;
+import net.daporkchop.v2cc.protocol.PluginProtocols;
 import net.daporkchop.v2cc.protocol.minecraft.register.RegisterProtocol;
 import net.daporkchop.v2cc.proxy.Player;
 import net.daporkchop.v2cc.proxy.ProxyProtocol;
@@ -105,8 +107,9 @@ public class CCSessionListener extends ClientListener {
                 ByteBuf buf = ByteBufAllocator.DEFAULT.buffer();
                 try {
                     //encode packet body
-                    buf.writeByte(protocol.getOutgoingId(event.getPacket().getClass()));
-                    event.getPacket().write(new ByteBufNetOutput(buf));
+                    NetOutput out = new ByteBufNetOutput(buf);
+                    protocol.getPacketHeader().writePacketId(out, protocol.getOutgoingId(event.getPacket().getClass()));
+                    event.getPacket().write(out);
 
                     //copy data into array
                     byte[] arr = new byte[buf.readableBytes()];
@@ -149,7 +152,7 @@ public class CCSessionListener extends ClientListener {
         protocol.setSubProtocol(SubProtocol.LOGIN, true, event.getSession());
         event.getSession().send(new LoginStartPacket(event.getSession().<GameProfile>getFlag(MinecraftConstants.PROFILE_KEY).getName()));
 
-        this.player.registerPlugin(RegisterProtocol.INSTANCE);
+        PluginProtocols.defaultProtocols().forEach(this.player::registerPlugin);
     }
 
     @Override

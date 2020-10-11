@@ -33,10 +33,13 @@ import lombok.Setter;
 import net.daporkchop.v2cc.Proxy;
 import net.daporkchop.v2cc.client.CCClient;
 import net.daporkchop.v2cc.protocol.PluginProtocol;
+import net.daporkchop.v2cc.protocol.PluginProtocols;
 import net.daporkchop.v2cc.server.VSessionListener;
 
 import java.util.HashMap;
 import java.util.Map;
+
+import static net.daporkchop.lib.common.util.PValidation.*;
 
 /**
  * The actual player, a tunnel between a vanilla client and a Forge server.
@@ -74,6 +77,10 @@ public class Player {
     }
 
     public void registerPlugin(@NonNull PluginProtocol protocol) {
-        this.pluginChannels.put(protocol.channelName(), protocol);
+        checkState(this.pluginChannels.putIfAbsent(protocol.channelName(), protocol) == null, "duplicate plugin channel name: \"%s\"", protocol.channelName());
+    }
+
+    public void registerPluginByName(@NonNull String channelName) {
+        this.registerPlugin(PluginProtocols.protocolForName(channelName));
     }
 }

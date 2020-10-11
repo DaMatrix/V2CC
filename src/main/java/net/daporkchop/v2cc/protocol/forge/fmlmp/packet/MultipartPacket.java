@@ -18,30 +18,18 @@
  *
  */
 
-package net.daporkchop.v2cc.protocol.minecraft.register;
+package net.daporkchop.v2cc.protocol.forge.fmlmp.packet;
 
-import com.github.steveice10.packetlib.packet.PacketHeader;
+import net.daporkchop.v2cc.protocol.PluginPacket;
 import net.daporkchop.v2cc.protocol.PluginProtocol;
-import net.daporkchop.v2cc.protocol.NoPacketHeader;
-import net.daporkchop.v2cc.protocol.minecraft.register.packet.RegisterPacket;
+import net.daporkchop.v2cc.protocol.forge.fmlmp.FMLMPProtocol;
 
 /**
  * @author DaPorkchop_
  */
-public class RegisterProtocol extends PluginProtocol {
-    public static final RegisterProtocol INSTANCE = new RegisterProtocol();
-
-    protected RegisterProtocol() {
-        super("REGISTER");
-    }
-
+public class MultipartPacket extends PluginPacket.Unknown {
     @Override
-    protected void registerPackets() {
-        this.register(0, RegisterPacket.class);
-    }
-
-    @Override
-    public PacketHeader getPacketHeader() {
-        return NoPacketHeader.INSTANCE;
+    public PluginProtocol getProtocol() {
+        return FMLMPProtocol.INSTANCE;
     }
 }

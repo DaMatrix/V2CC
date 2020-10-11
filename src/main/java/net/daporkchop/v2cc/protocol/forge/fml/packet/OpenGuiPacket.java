@@ -18,30 +18,58 @@
  *
  */
 
-package net.daporkchop.v2cc.protocol.minecraft.register;
+package net.daporkchop.v2cc.protocol.forge.fml.packet;
 
-import com.github.steveice10.packetlib.packet.PacketHeader;
+import com.github.steveice10.packetlib.io.NetInput;
+import com.github.steveice10.packetlib.io.NetOutput;
+import lombok.AccessLevel;
+import lombok.AllArgsConstructor;
+import lombok.Getter;
+import lombok.NoArgsConstructor;
+import lombok.Setter;
+import net.daporkchop.v2cc.protocol.PluginPacket;
 import net.daporkchop.v2cc.protocol.PluginProtocol;
-import net.daporkchop.v2cc.protocol.NoPacketHeader;
-import net.daporkchop.v2cc.protocol.minecraft.register.packet.RegisterPacket;
+import net.daporkchop.v2cc.protocol.forge.fml.FMLProtocol;
+
+import java.io.IOException;
 
 /**
  * @author DaPorkchop_
  */
-public class RegisterProtocol extends PluginProtocol {
-    public static final RegisterProtocol INSTANCE = new RegisterProtocol();
+@NoArgsConstructor(access = AccessLevel.PRIVATE)
+@AllArgsConstructor
+@Setter
+@Getter
+public class OpenGuiPacket extends PluginPacket {
+    protected int windowId;
+    protected String modId;
+    protected int modGuiId;
+    protected int x;
+    protected int y;
+    protected int z;
 
-    protected RegisterProtocol() {
-        super("REGISTER");
+    @Override
+    public void read(NetInput in) throws IOException {
+        this.windowId = in.readInt();
+        this.modId = in.readString();
+        this.modGuiId = in.readInt();
+        this.x = in.readInt();
+        this.y = in.readInt();
+        this.z = in.readInt();
     }
 
     @Override
-    protected void registerPackets() {
-        this.register(0, RegisterPacket.class);
+    public void write(NetOutput out) throws IOException {
+        out.writeInt(this.windowId);
+        out.writeString(this.modId);
+        out.writeInt(this.modGuiId);
+        out.writeInt(this.x);
+        out.writeInt(this.y);
+        out.writeInt(this.z);
     }
 
     @Override
-    public PacketHeader getPacketHeader() {
-        return NoPacketHeader.INSTANCE;
+    public PluginProtocol getProtocol() {
+        return FMLProtocol.INSTANCE;
     }
 }

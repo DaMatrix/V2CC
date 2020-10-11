@@ -18,30 +18,27 @@
  *
  */
 
-package net.daporkchop.v2cc.protocol.minecraft.register;
+package net.daporkchop.v2cc.protocol.forge.fml;
 
-import com.github.steveice10.packetlib.packet.PacketHeader;
-import net.daporkchop.v2cc.protocol.PluginProtocol;
-import net.daporkchop.v2cc.protocol.NoPacketHeader;
-import net.daporkchop.v2cc.protocol.minecraft.register.packet.RegisterPacket;
+import net.daporkchop.v2cc.protocol.forge.AbstractForgeProtocol;
+import net.daporkchop.v2cc.protocol.forge.fml.packet.CompleteHandshakePacket;
+import net.daporkchop.v2cc.protocol.forge.fml.packet.EntitySpawnPacket;
+import net.daporkchop.v2cc.protocol.forge.fml.packet.OpenGuiPacket;
 
 /**
  * @author DaPorkchop_
  */
-public class RegisterProtocol extends PluginProtocol {
-    public static final RegisterProtocol INSTANCE = new RegisterProtocol();
+public class FMLProtocol extends AbstractForgeProtocol {
+    public static final FMLProtocol INSTANCE = new FMLProtocol();
 
-    protected RegisterProtocol() {
-        super("REGISTER");
+    protected FMLProtocol() {
+        super("FML");
     }
 
     @Override
     protected void registerPackets() {
-        this.register(0, RegisterPacket.class);
-    }
-
-    @Override
-    public PacketHeader getPacketHeader() {
-        return NoPacketHeader.INSTANCE;
+        this.register(0, CompleteHandshakePacket.class);
+        this.register(1, OpenGuiPacket.class);
+        this.registerIncoming(2, EntitySpawnPacket.class);
     }
 }

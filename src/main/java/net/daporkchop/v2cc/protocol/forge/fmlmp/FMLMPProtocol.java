@@ -18,30 +18,31 @@
  *
  */
 
-package net.daporkchop.v2cc.protocol.minecraft.register;
+package net.daporkchop.v2cc.protocol.forge.fmlmp;
 
-import com.github.steveice10.packetlib.io.NetInput;
-import com.github.steveice10.packetlib.io.NetOutput;
-import lombok.AccessLevel;
-import lombok.NoArgsConstructor;
-import net.daporkchop.v2cc.protocol.PluginPacketHeader;
-
-import java.io.IOException;
+import com.github.steveice10.packetlib.packet.PacketHeader;
+import net.daporkchop.v2cc.protocol.NoPacketHeader;
+import net.daporkchop.v2cc.protocol.PluginProtocol;
+import net.daporkchop.v2cc.protocol.forge.AbstractForgeProtocol;
+import net.daporkchop.v2cc.protocol.forge.fmlmp.packet.MultipartPacket;
 
 /**
  * @author DaPorkchop_
  */
-@NoArgsConstructor(access = AccessLevel.PRIVATE)
-final class RegisterPacketHeader extends PluginPacketHeader {
-    public static final RegisterPacketHeader INSTANCE = new RegisterPacketHeader();
+public class FMLMPProtocol extends PluginProtocol {
+    public static final FMLMPProtocol INSTANCE = new FMLMPProtocol();
 
-    @Override
-    public int readPacketId(NetInput in) throws IOException {
-        return 0;
+    protected FMLMPProtocol() {
+        super("FML|MP");
     }
 
     @Override
-    public void writePacketId(NetOutput out, int packetId) throws IOException {
-        //no-op
+    protected void registerPackets() {
+        this.register(0, MultipartPacket.class);
+    }
+
+    @Override
+    public PacketHeader getPacketHeader() {
+        return NoPacketHeader.INSTANCE;
     }
 }

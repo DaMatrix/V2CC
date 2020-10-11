@@ -18,30 +18,29 @@
  *
  */
 
-package net.daporkchop.v2cc.protocol.minecraft.register;
+package net.daporkchop.v2cc.protocol;
 
-import com.github.steveice10.packetlib.packet.PacketHeader;
-import net.daporkchop.v2cc.protocol.PluginProtocol;
-import net.daporkchop.v2cc.protocol.NoPacketHeader;
-import net.daporkchop.v2cc.protocol.minecraft.register.packet.RegisterPacket;
+import com.github.steveice10.packetlib.io.NetInput;
+import com.github.steveice10.packetlib.io.NetOutput;
+import lombok.AccessLevel;
+import lombok.NoArgsConstructor;
+
+import java.io.IOException;
 
 /**
  * @author DaPorkchop_
  */
-public class RegisterProtocol extends PluginProtocol {
-    public static final RegisterProtocol INSTANCE = new RegisterProtocol();
+@NoArgsConstructor(access = AccessLevel.PRIVATE)
+public final class NoPacketHeader extends PluginPacketHeader {
+    public static final NoPacketHeader INSTANCE = new NoPacketHeader();
 
-    protected RegisterProtocol() {
-        super("REGISTER");
+    @Override
+    public int readPacketId(NetInput in) throws IOException {
+        return 0;
     }
 
     @Override
-    protected void registerPackets() {
-        this.register(0, RegisterPacket.class);
-    }
-
-    @Override
-    public PacketHeader getPacketHeader() {
-        return NoPacketHeader.INSTANCE;
+    public void writePacketId(NetOutput out, int packetId) throws IOException {
+        //no-op
     }
 }

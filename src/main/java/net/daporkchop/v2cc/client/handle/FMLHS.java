@@ -52,24 +52,15 @@ public enum FMLHS implements PacketHandler<MinecraftPacket> {
     REGISTER_CHANNELS {
         @Override
         public PacketHandler<?> handle(@NonNull Player player, @NonNull MinecraftPacket pck) {
-            /*if (pck instanceof ServerPluginMessagePacket)   {
-                ServerPluginMessagePacket packet = (ServerPluginMessagePacket) pck;
-                checkState("REGISTER".equals(packet.getChannel()), "Received plugin message on unexpected channel: \"%s\"", packet.getChannel());
-
-                String payload = new String(packet.getData(), StandardCharsets.US_ASCII);
-                Set<String> channels = new HashSet<>(Arrays.asList(payload.split("\0")));
-                checkState(channels.equals(this.expectedChannels), "invalid input channels (received=%s, expected=%s)", channels, this.expectedChannels);
-
-                player.registerPlugin(FMLHSProtocol.INSTANCE);
-                return SERVER_HELLO;
-            }*/
             if (pck instanceof RegisterPacket) {
                 RegisterPacket packet = (RegisterPacket) pck;
 
                 checkState(packet.channels().containsAll(EXPECTED_SERVER_PLUGIN_CHANNELS), "register channels (received=%s)", packet.channels());
 
-                player.registerPlugin(FMLHSProtocol.INSTANCE);
-                player.registerPlugin(ForgeProtocol.INSTANCE);
+                //TODO: remove this
+                packet.channels().remove("cubicchunks");
+
+                packet.channels().stream().distinct().forEach(player::registerPluginByName);
                 return SERVER_HELLO;
             }
             return null;
