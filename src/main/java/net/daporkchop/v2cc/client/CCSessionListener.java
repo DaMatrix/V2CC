@@ -34,10 +34,14 @@ import com.github.steveice10.packetlib.event.session.PacketSendingEvent;
 import com.github.steveice10.packetlib.event.session.PacketSentEvent;
 import com.github.steveice10.packetlib.event.session.SessionListener;
 import com.github.steveice10.packetlib.packet.Packet;
+import com.github.steveice10.packetlib.packet.PacketProtocol;
 import lombok.NonNull;
 import lombok.RequiredArgsConstructor;
 import net.daporkchop.v2cc.proxy.Player;
 import net.daporkchop.v2cc.proxy.ProxyProtocol;
+
+import java.util.HashMap;
+import java.util.Map;
 
 import static net.daporkchop.v2cc.util.Constants.*;
 
@@ -48,6 +52,8 @@ import static net.daporkchop.v2cc.util.Constants.*;
 public class CCSessionListener extends ClientListener {
     @NonNull
     protected final Player player;
+
+    protected final Map<String, PacketProtocol> pluginChannels = new HashMap<>();
 
     @Override
     public void packetReceived(PacketReceivedEvent event) {
