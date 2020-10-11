@@ -21,11 +21,10 @@
 package net.daporkchop.v2cc.proxy;
 
 import com.github.steveice10.mc.protocol.packet.handshake.client.HandshakePacket;
-import com.github.steveice10.mc.protocol.packet.ingame.server.ServerJoinGamePacket;
 import com.github.steveice10.mc.protocol.packet.login.client.LoginStartPacket;
 import com.github.steveice10.packetlib.Client;
 import com.github.steveice10.packetlib.Session;
-import com.github.steveice10.packetlib.packet.PacketProtocol;
+import com.github.steveice10.packetlib.packet.Packet;
 import lombok.AccessLevel;
 import lombok.Getter;
 import lombok.NonNull;
@@ -34,9 +33,10 @@ import net.daporkchop.v2cc.Proxy;
 import net.daporkchop.v2cc.client.CCClient;
 import net.daporkchop.v2cc.protocol.PluginProtocol;
 import net.daporkchop.v2cc.protocol.PluginProtocols;
-import net.daporkchop.v2cc.server.VSessionListener;
+import net.daporkchop.v2cc.util.PacketHandler;
 
 import java.util.HashMap;
+import java.util.IdentityHashMap;
 import java.util.Map;
 
 import static net.daporkchop.lib.common.util.PValidation.*;
@@ -65,19 +65,21 @@ public class Player {
     protected LoginStartPacket packetLoginStart;
 
     protected final Map<String, PluginProtocol> pluginChannels = new HashMap<>();
+    protected final Map<PluginProtocol, PacketHandler<Packet>> pluginHandlers = new IdentityHashMap<>();
 
     public Player(@NonNull Proxy proxy, @NonNull Session serverSession) {
         this.proxy = proxy;
         this.serverSession = serverSession;
     }
 
-    public void createClientAndConnect()  {
+    public void createClientAndConnect() {
         this.client = new CCClient(this.proxy, this);
         (this.clientSession = this.client.getSession()).connect(false);
     }
 
     public void registerPlugin(@NonNull PluginProtocol protocol) {
         checkState(this.pluginChannels.putIfAbsent(protocol.channelName(), protocol) == null, "duplicate plugin channel name: \"%s\"", protocol.channelName());
+        this.pluginHandlers.put(protocol, protocol.handler());
     }
 
     public void registerPluginByName(@NonNull String channelName) {

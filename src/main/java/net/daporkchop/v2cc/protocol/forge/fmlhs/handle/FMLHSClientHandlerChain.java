@@ -18,21 +18,19 @@
  *
  */
 
-package net.daporkchop.v2cc.client.handle;
+package net.daporkchop.v2cc.protocol.forge.fmlhs.handle;
 
-import com.github.steveice10.mc.protocol.packet.MinecraftPacket;
+import com.github.steveice10.packetlib.packet.Packet;
 import lombok.NonNull;
-import net.daporkchop.v2cc.protocol.forge.fmlhs.FMLHSProtocol;
 import net.daporkchop.v2cc.protocol.forge.fmlhs.packet.ModListPacket;
 import net.daporkchop.v2cc.protocol.forge.fmlhs.packet.client.ClientHandshakeAckPacket;
 import net.daporkchop.v2cc.protocol.forge.fmlhs.packet.client.ClientHelloPacket;
 import net.daporkchop.v2cc.protocol.forge.fmlhs.packet.server.RegistryDataPacket;
 import net.daporkchop.v2cc.protocol.forge.fmlhs.packet.server.ServerHandshakeAckPacket;
 import net.daporkchop.v2cc.protocol.forge.fmlhs.packet.server.ServerHelloPacket;
-import net.daporkchop.v2cc.protocol.forge.forge.ForgeProtocol;
 import net.daporkchop.v2cc.protocol.minecraft.register.packet.RegisterPacket;
 import net.daporkchop.v2cc.proxy.Player;
-import net.daporkchop.v2cc.util.PacketHandler;
+import net.daporkchop.v2cc.util.ChainedPacketHandler;
 
 import java.util.HashMap;
 import java.util.Map;
@@ -48,27 +46,10 @@ import static net.daporkchop.v2cc.util.Constants.*;
  * @author DaPorkchop_
  */
 //TODO: this whole thing should be redone in a way that's less hacky
-public enum FMLHS implements PacketHandler<MinecraftPacket> {
-    REGISTER_CHANNELS {
+public enum FMLHSClientHandlerChain implements ChainedPacketHandler {
+    HELLO {
         @Override
-        public PacketHandler<?> handle(@NonNull Player player, @NonNull MinecraftPacket pck) {
-            if (pck instanceof RegisterPacket) {
-                RegisterPacket packet = (RegisterPacket) pck;
-
-                checkState(packet.channels().containsAll(EXPECTED_SERVER_PLUGIN_CHANNELS), "register channels (received=%s)", packet.channels());
-
-                //TODO: remove this
-                packet.channels().remove("cubicchunks");
-
-                packet.channels().stream().distinct().forEach(player::registerPluginByName);
-                return SERVER_HELLO;
-            }
-            return null;
-        }
-    },
-    SERVER_HELLO {
-        @Override
-        public PacketHandler<?> handle(@NonNull Player player, @NonNull MinecraftPacket pck) {
+        public ChainedPacketHandler handle(@NonNull Player player, @NonNull Packet pck) {
             checkArg(pck instanceof ServerHelloPacket, pck);
             ServerHelloPacket packet = (ServerHelloPacket) pck;
 
@@ -83,7 +64,7 @@ public enum FMLHS implements PacketHandler<MinecraftPacket> {
     },
     MOD_LIST {
         @Override
-        public PacketHandler<?> handle(@NonNull Player player, @NonNull MinecraftPacket pck) {
+        public ChainedPacketHandler handle(@NonNull Player player, @NonNull Packet pck) {
             checkArg(pck instanceof ModListPacket, pck);
             ModListPacket packet = (ModListPacket) pck;
 
@@ -96,11 +77,11 @@ public enum FMLHS implements PacketHandler<MinecraftPacket> {
     },
     REGISTRY {
         @Override
-        public PacketHandler<?> handle(@NonNull Player player, @NonNull MinecraftPacket pck) {
+        public ChainedPacketHandler handle(@NonNull Player player, @NonNull Packet pck) {
             checkArg(pck instanceof RegistryDataPacket, pck);
             RegistryDataPacket packet = (RegistryDataPacket) pck;
 
-            if (packet.hasMore())   {
+            if (packet.hasMore()) {
                 return null; //continue waiting for the last registry packet
             }
 
@@ -110,7 +91,7 @@ public enum FMLHS implements PacketHandler<MinecraftPacket> {
     },
     ACK_0 {
         @Override
-        public PacketHandler<?> handle(@NonNull Player player, @NonNull MinecraftPacket pck) {
+        public ChainedPacketHandler handle(@NonNull Player player, @NonNull Packet pck) {
             checkArg(pck instanceof ServerHandshakeAckPacket, pck);
             ServerHandshakeAckPacket packet = (ServerHandshakeAckPacket) pck;
             checkArg(packet.phase() == ServerHandshakeAckPacket.State.WAITINGCACK, packet.phase());
@@ -121,7 +102,7 @@ public enum FMLHS implements PacketHandler<MinecraftPacket> {
     },
     ACK_1 {
         @Override
-        public PacketHandler<?> handle(@NonNull Player player, @NonNull MinecraftPacket pck) {
+        public ChainedPacketHandler handle(@NonNull Player player, @NonNull Packet pck) {
             checkArg(pck instanceof ServerHandshakeAckPacket, pck);
             ServerHandshakeAckPacket packet = (ServerHandshakeAckPacket) pck;
             checkArg(packet.phase() == ServerHandshakeAckPacket.State.COMPLETE, packet.phase());
@@ -132,11 +113,11 @@ public enum FMLHS implements PacketHandler<MinecraftPacket> {
     },
     DONE {
         @Override
-        public PacketHandler<?> handle(@NonNull Player player, @NonNull MinecraftPacket pck) {
+        public ChainedPacketHandler handle(@NonNull Player player, @NonNull Packet pck) {
             return null; //no-op
         }
     };
 
     @Override
-    public abstract PacketHandler<?> handle(@NonNull Player player, @NonNull MinecraftPacket pck);
+    public abstract ChainedPacketHandler handle(@NonNull Player player, @NonNull Packet pck);
 }

@@ -18,53 +18,39 @@
  *
  */
 
-package net.daporkchop.v2cc.protocol.minecraft.register;
+package net.daporkchop.v2cc.util;
 
 import com.github.steveice10.packetlib.packet.Packet;
-import com.github.steveice10.packetlib.packet.PacketHeader;
 import lombok.NonNull;
-import net.daporkchop.v2cc.protocol.PluginProtocol;
-import net.daporkchop.v2cc.protocol.NoPacketHeader;
-import net.daporkchop.v2cc.protocol.minecraft.register.packet.RegisterPacket;
+import lombok.RequiredArgsConstructor;
 import net.daporkchop.v2cc.proxy.Player;
-import net.daporkchop.v2cc.util.PacketHandler;
-
-import static net.daporkchop.lib.common.util.PValidation.*;
-import static net.daporkchop.v2cc.util.Constants.*;
 
 /**
+ * Handles incoming packets.
+ *
  * @author DaPorkchop_
  */
-public class RegisterProtocol extends PluginProtocol implements PacketHandler<Packet> {
-    public static final RegisterProtocol INSTANCE = new RegisterProtocol();
+@FunctionalInterface
+public interface ChainedPacketHandler {
+    /**
+     * Handles the given packet.
+     *
+     * @param player the player that the packet was received for
+     * @param packet the packet that was received
+     */
+    ChainedPacketHandler handle(@NonNull Player player, @NonNull Packet packet);
 
-    protected RegisterProtocol() {
-        super("REGISTER");
-    }
+    @RequiredArgsConstructor
+    class HandlerImpl implements PacketHandler<Packet> {
+        @NonNull
+        protected ChainedPacketHandler handler;
 
-    @Override
-    protected void registerPackets() {
-        this.register(0, RegisterPacket.class);
-    }
-
-    @Override
-    public PacketHandler<Packet> handler() {
-        return this;
-    }
-
-    @Override
-    public PacketHeader getPacketHeader() {
-        return NoPacketHeader.INSTANCE;
-    }
-
-    @Override
-    public void handle(@NonNull Player player, @NonNull Packet pck) {
-        checkArg(pck  instanceof RegisterPacket, pck);
-        RegisterPacket packet = (RegisterPacket) pck;
-
-        //TODO: remove this
-        packet.channels().remove("cubicchunks");
-
-        packet.channels().stream().distinct().forEach(player::registerPluginByName);
+        @Override
+        public void handle(@NonNull Player player, @NonNull Packet packet) {
+            ChainedPacketHandler next = this.handler.handle(player, packet);
+            if (next != null) {
+                this.handler = next;
+            }
+        }
     }
 }

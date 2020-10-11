@@ -24,16 +24,27 @@ import com.github.steveice10.packetlib.Client;
 import com.github.steveice10.packetlib.Server;
 import com.github.steveice10.packetlib.Session;
 import com.github.steveice10.packetlib.crypt.PacketEncryption;
+import com.github.steveice10.packetlib.packet.Packet;
 import com.github.steveice10.packetlib.packet.PacketProtocol;
 import lombok.Getter;
 import lombok.NonNull;
+import net.daporkchop.v2cc.proxy.Player;
+import net.daporkchop.v2cc.util.PacketHandler;
+
+import java.util.IdentityHashMap;
+import java.util.Map;
+
+import static net.daporkchop.lib.common.util.PorkUtil.*;
+import static net.daporkchop.v2cc.util.Constants.*;
 
 /**
  * @author DaPorkchop_
  */
-@Getter
 public abstract class PluginProtocol extends PacketProtocol {
+    @Getter
     protected final String channelName;
+
+    protected final Map<Class<? extends Packet>, PacketHandler<?>> handlers = new IdentityHashMap<>();
 
     public PluginProtocol(@NonNull String channelName) {
         this.channelName = channelName;
@@ -45,6 +56,23 @@ public abstract class PluginProtocol extends PacketProtocol {
      * Actually registers the packets used by this protocol.
      */
     protected abstract void registerPackets();
+
+    /**
+     * The initial packet handler to use for a new connection using this protocol.
+     */
+    public PacketHandler<Packet> handler() {
+        return new DefaultHandler();
+    }
+
+    public final <P extends Packet> void register(int id, Class<P> packet, @NonNull PacketHandler<P> handler) {
+        super.register(id, packet);
+        this.handlers.put(packet, handler);
+    }
+
+    public final <P extends Packet> void registerIncoming(int id, Class<P> packet, @NonNull PacketHandler<P> handler) {
+        super.registerIncoming(id, packet);
+        this.handlers.put(packet, handler);
+    }
 
     @Override
     public final String getSRVRecordPrefix() {
@@ -64,5 +92,17 @@ public abstract class PluginProtocol extends PacketProtocol {
     @Override
     public void newServerSession(Server server, Session session) {
         throw new UnsupportedOperationException();
+    }
+
+    protected class DefaultHandler implements PacketHandler<Packet> {
+        @Override
+        public void handle(@NonNull Player player, @NonNull Packet packet) {
+            PacketHandler<?> handler = PluginProtocol.this.handlers.get(packet.getClass());
+            if (handler == null) {
+                LOG.warn("not handling packet: %s", packet);
+            } else {
+                handler.handle(player, uncheckedCast(packet));
+            }
+        }
     }
 }

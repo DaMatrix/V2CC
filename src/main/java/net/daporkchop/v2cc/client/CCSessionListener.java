@@ -37,7 +37,6 @@ import com.github.steveice10.packetlib.event.session.PacketSentEvent;
 import com.github.steveice10.packetlib.io.NetInput;
 import com.github.steveice10.packetlib.io.NetOutput;
 import com.github.steveice10.packetlib.packet.Packet;
-import com.github.steveice10.packetlib.packet.PacketProtocol;
 import com.github.steveice10.packetlib.tcp.io.ByteBufNetInput;
 import com.github.steveice10.packetlib.tcp.io.ByteBufNetOutput;
 import io.netty.buffer.ByteBuf;
@@ -45,16 +44,14 @@ import io.netty.buffer.ByteBufAllocator;
 import io.netty.buffer.Unpooled;
 import lombok.NonNull;
 import lombok.RequiredArgsConstructor;
-import net.daporkchop.v2cc.client.handle.FMLHS;
+import net.daporkchop.v2cc.protocol.PluginProtocol;
 import net.daporkchop.v2cc.protocol.PluginProtocols;
-import net.daporkchop.v2cc.protocol.minecraft.register.RegisterProtocol;
 import net.daporkchop.v2cc.proxy.Player;
 import net.daporkchop.v2cc.proxy.ProxyProtocol;
 import net.daporkchop.v2cc.util.PacketHandler;
 
 import java.io.IOException;
 
-import static net.daporkchop.lib.common.util.PorkUtil.*;
 import static net.daporkchop.v2cc.util.Constants.*;
 
 /**
@@ -65,17 +62,17 @@ public class CCSessionListener extends ClientListener {
     @NonNull
     protected final Player player;
 
-    protected PacketHandler<?> handler = FMLHS.REGISTER_CHANNELS;
-
     @Override
     public void packetReceived(PacketReceivedEvent event) {
         super.packetReceived(event);
 
         Packet pck = event.getPacket();
 
+        PacketHandler<Packet> handler = null;
+
         if (pck instanceof ServerPluginMessagePacket) { //decode plugin message
             ServerPluginMessagePacket packet = (ServerPluginMessagePacket) pck;
-            PacketProtocol pluginProtocol = this.player.pluginChannels().get(packet.getChannel());
+            PluginProtocol pluginProtocol = this.player.pluginChannels().get(packet.getChannel());
             if (pluginProtocol != null) {
                 try {
                     NetInput in = new ByteBufNetInput(Unpooled.wrappedBuffer(packet.getData()));
@@ -84,16 +81,14 @@ public class CCSessionListener extends ClientListener {
                     throw new RuntimeException(e);
                 }
 
+                handler = this.player.pluginHandlers().get(pluginProtocol);
             }
         }
 
         LOG.debug("cc received packet: %s", pck);
 
-        if (this.handler != null) {
-            PacketHandler<?> nextHandler = this.handler.handle(this.player, uncheckedCast(pck));
-            if (nextHandler != null) {
-                this.handler = nextHandler;
-            }
+        if (handler != null) {
+            handler.handle(this.player, pck);
         }
     }
 

@@ -36,7 +36,6 @@ public interface PacketHandler<P extends Packet> {
      *
      * @param player the player that the packet was received for
      * @param packet the packet that was received
-     * @return the next packet handler, or {@code null} if the handler should remain unchanged
      */
-    PacketHandler<?> handle(@NonNull Player player, @NonNull P packet);
+    void handle(@NonNull Player player, @NonNull P packet);
 }

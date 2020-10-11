@@ -20,7 +20,9 @@
 
 package net.daporkchop.v2cc.protocol.forge.fmlhs;
 
+import com.github.steveice10.packetlib.packet.Packet;
 import net.daporkchop.v2cc.protocol.forge.AbstractForgeProtocol;
+import net.daporkchop.v2cc.protocol.forge.fmlhs.handle.FMLHSClientHandlerChain;
 import net.daporkchop.v2cc.protocol.forge.fmlhs.packet.ModListPacket;
 import net.daporkchop.v2cc.protocol.forge.fmlhs.packet.client.ClientHandshakeAckPacket;
 import net.daporkchop.v2cc.protocol.forge.fmlhs.packet.client.ClientHelloPacket;
@@ -28,6 +30,8 @@ import net.daporkchop.v2cc.protocol.forge.fmlhs.packet.server.HandshakeResetPack
 import net.daporkchop.v2cc.protocol.forge.fmlhs.packet.server.RegistryDataPacket;
 import net.daporkchop.v2cc.protocol.forge.fmlhs.packet.server.ServerHandshakeAckPacket;
 import net.daporkchop.v2cc.protocol.forge.fmlhs.packet.server.ServerHelloPacket;
+import net.daporkchop.v2cc.util.ChainedPacketHandler;
+import net.daporkchop.v2cc.util.PacketHandler;
 
 /**
  * @author DaPorkchop_
@@ -48,5 +52,10 @@ public class FMLHSProtocol extends AbstractForgeProtocol {
         this.registerIncoming(254, HandshakeResetPacket.class);
         this.registerOutgoing(255, ClientHandshakeAckPacket.class);
         this.registerIncoming(255, ServerHandshakeAckPacket.class);
+    }
+
+    @Override
+    public PacketHandler<Packet> handler() {
+        return new ChainedPacketHandler.HandlerImpl(FMLHSClientHandlerChain.HELLO);
     }
 }
