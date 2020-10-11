@@ -28,7 +28,6 @@ import net.daporkchop.lib.logging.Logging;
 import net.daporkchop.lib.unsafe.PUnsafe;
 
 import java.util.Arrays;
-import java.util.Collection;
 import java.util.Collections;
 import java.util.List;
 import java.util.concurrent.Callable;
@@ -42,8 +41,8 @@ public class Constants {
 
     public static final Logger LOG = Logging.logger
             .redirectStdOut()
-            .enableANSI()
-            .setLogAmount(LogAmount.DEBUG);
+            //.setLogAmount(LogAmount.DEBUG)
+            .enableANSI();
 
     public static final String FLAG_PLAYER = "v2cc_player";
 

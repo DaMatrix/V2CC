@@ -46,6 +46,7 @@ tasks.withType(JavaCompile) {
 }
 
 repositories {
+    mavenLocal()
     maven {
         name = "DaPorkchop_"
         url = "https://maven.daporkchop.net/"
@@ -60,6 +61,7 @@ configurations {
 dependencies {
     shade "net.daporkchop.lib:config:$porklibVersion"
     shade "net.daporkchop.lib:logging:$porklibVersion"
+    shade "net.daporkchop.lib:math:$porklibVersion"
 
     shade "com.github.steveice10:mcprotocollib:$mcprotocollibVersion"
 

@@ -18,49 +18,31 @@
  *
  */
 
-package net.daporkchop.v2cc.protocol.minecraft.register;
+package net.daporkchop.v2cc.protocol.forge.cubicchunks.data;
 
-import com.github.steveice10.packetlib.packet.Packet;
-import com.github.steveice10.packetlib.packet.PacketHeader;
-import lombok.NonNull;
-import net.daporkchop.v2cc.protocol.NoPacketHeader;
-import net.daporkchop.v2cc.protocol.PluginProtocol;
-import net.daporkchop.v2cc.protocol.minecraft.register.packet.RegisterPacket;
-import net.daporkchop.v2cc.proxy.Player;
-import net.daporkchop.v2cc.util.PacketHandler;
+import com.github.steveice10.mc.protocol.data.game.chunk.Section;
+import com.github.steveice10.opennbt.tag.builtin.CompoundTag;
+import com.github.steveice10.packetlib.io.NetInput;
+import lombok.Getter;
+import lombok.Setter;
 
-import static net.daporkchop.lib.common.util.PValidation.*;
+import java.io.IOException;
+import java.util.List;
 
 /**
  * @author DaPorkchop_
  */
-public class RegisterProtocol extends PluginProtocol implements PacketHandler<Packet> {
-    public static final RegisterProtocol INSTANCE = new RegisterProtocol();
+@Getter
+@Setter
+public class Cube extends CubePos {
+    protected Section section;
+    protected List<CompoundTag> tileEntities;
 
-    protected RegisterProtocol() {
-        super("REGISTER");
+    public Cube(int x, int y, int z) {
+        super(x, y, z);
     }
 
-    @Override
-    protected void registerPackets() {
-        this.register(0, RegisterPacket.class);
-    }
-
-    @Override
-    public PacketHandler<Packet> handler() {
-        return this;
-    }
-
-    @Override
-    public PacketHeader getPacketHeader() {
-        return NoPacketHeader.INSTANCE;
-    }
-
-    @Override
-    public void handle(@NonNull Player player, @NonNull Packet pck) {
-        checkArg(pck instanceof RegisterPacket, pck);
-        RegisterPacket packet = (RegisterPacket) pck;
-
-        packet.channels().stream().distinct().forEach(player::registerPluginByName);
+    public Cube(NetInput in) throws IOException {
+        super(in);
     }
 }

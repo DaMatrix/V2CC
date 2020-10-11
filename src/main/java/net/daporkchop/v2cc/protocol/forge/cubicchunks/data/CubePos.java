@@ -18,49 +18,45 @@
  *
  */
 
-package net.daporkchop.v2cc.protocol.minecraft.register;
+package net.daporkchop.v2cc.protocol.forge.cubicchunks.data;
 
-import com.github.steveice10.packetlib.packet.Packet;
-import com.github.steveice10.packetlib.packet.PacketHeader;
-import lombok.NonNull;
-import net.daporkchop.v2cc.protocol.NoPacketHeader;
-import net.daporkchop.v2cc.protocol.PluginProtocol;
-import net.daporkchop.v2cc.protocol.minecraft.register.packet.RegisterPacket;
-import net.daporkchop.v2cc.proxy.Player;
-import net.daporkchop.v2cc.util.PacketHandler;
+import com.github.steveice10.packetlib.io.NetInput;
+import lombok.AllArgsConstructor;
+import lombok.EqualsAndHashCode;
+import lombok.Getter;
 
-import static net.daporkchop.lib.common.util.PValidation.*;
+import java.io.IOException;
 
 /**
  * @author DaPorkchop_
  */
-public class RegisterProtocol extends PluginProtocol implements PacketHandler<Packet> {
-    public static final RegisterProtocol INSTANCE = new RegisterProtocol();
+@AllArgsConstructor
+@Getter
+@EqualsAndHashCode
+public class CubePos {
+    private static int readSignedVarInt(NetInput in) throws IOException {
+        int val = 0;
+        int b = in.readUnsignedByte();
+        boolean sign = ((b >> 6) & 1) != 0;
 
-    protected RegisterProtocol() {
-        super("REGISTER");
+        val |= b & ((1 << 6) - 1);
+        int shift = 6;
+        while ((b & 0x80) != 0) {
+            if (shift > Integer.SIZE) {
+                throw new RuntimeException("VarInt too big");
+            }
+            b = in.readUnsignedByte();
+            val |= (b & ((1 << 7) - 1)) << shift;
+            shift += 7;
+        }
+        return sign ? ~val : val;
     }
 
-    @Override
-    protected void registerPackets() {
-        this.register(0, RegisterPacket.class);
-    }
+    protected final int x;
+    protected final int y;
+    protected final int z;
 
-    @Override
-    public PacketHandler<Packet> handler() {
-        return this;
-    }
-
-    @Override
-    public PacketHeader getPacketHeader() {
-        return NoPacketHeader.INSTANCE;
-    }
-
-    @Override
-    public void handle(@NonNull Player player, @NonNull Packet pck) {
-        checkArg(pck instanceof RegisterPacket, pck);
-        RegisterPacket packet = (RegisterPacket) pck;
-
-        packet.channels().stream().distinct().forEach(player::registerPluginByName);
+    public CubePos(NetInput in) throws IOException {
+        this(readSignedVarInt(in), readSignedVarInt(in), readSignedVarInt(in));
     }
 }

@@ -22,6 +22,7 @@ package net.daporkchop.v2cc.protocol;
 
 import lombok.NonNull;
 import lombok.experimental.UtilityClass;
+import net.daporkchop.v2cc.protocol.forge.cubicchunks.CubicChunksProtocol;
 import net.daporkchop.v2cc.protocol.forge.fml.FMLProtocol;
 import net.daporkchop.v2cc.protocol.forge.fmlhs.FMLHSProtocol;
 import net.daporkchop.v2cc.protocol.forge.fmlmp.FMLMPProtocol;
@@ -47,6 +48,7 @@ public class PluginProtocols {
     protected final Set<PluginProtocol> DEFAULT_PROTOCOLS = new HashSet<>();
 
     static {
+        register(CubicChunksProtocol.INSTANCE);
         register(FMLProtocol.INSTANCE);
         register(FMLHSProtocol.INSTANCE);
         register(FMLMPProtocol.INSTANCE);
