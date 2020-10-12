@@ -26,15 +26,16 @@ import lombok.AccessLevel;
 import lombok.AllArgsConstructor;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
+import lombok.NonNull;
 import lombok.Setter;
 import net.daporkchop.v2cc.protocol.PluginPacket;
 import net.daporkchop.v2cc.protocol.PluginProtocol;
 import net.daporkchop.v2cc.protocol.forge.cubicchunks.CubicChunksProtocol;
 import net.daporkchop.v2cc.protocol.forge.cubicchunks.data.Column;
+import net.daporkchop.v2cc.proxy.Player;
+import net.daporkchop.v2cc.util.PacketHandler;
 
 import java.io.IOException;
-
-import static net.daporkchop.lib.common.util.PValidation.*;
 
 /**
  * @author DaPorkchop_
@@ -62,5 +63,12 @@ public class ColumnPacket extends PluginPacket {
     @Override
     public PluginProtocol getProtocol() {
         return CubicChunksProtocol.INSTANCE;
+    }
+
+    public static class Handler implements PacketHandler<ColumnPacket> {
+        @Override
+        public void handle(@NonNull Player player, @NonNull ColumnPacket packet) {
+            player.putColumn(packet.column);
+        }
     }
 }

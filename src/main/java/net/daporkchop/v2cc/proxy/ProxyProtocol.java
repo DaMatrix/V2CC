@@ -72,7 +72,7 @@ public class ProxyProtocol extends MinecraftProtocol {
         }
         this.setSubProtocol(this.getSubProtocol(), true, session);
 
-        session.addListener(new CCSessionListener(client.player()));
+        session.addListener(client.player().clientListener());
     }
 
     @Override

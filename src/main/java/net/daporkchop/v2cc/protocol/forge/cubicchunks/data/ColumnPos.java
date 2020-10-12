@@ -20,33 +20,17 @@
 
 package net.daporkchop.v2cc.protocol.forge.cubicchunks.data;
 
-import com.github.steveice10.mc.protocol.data.game.chunk.Section;
-import com.github.steveice10.opennbt.tag.builtin.CompoundTag;
-import com.github.steveice10.packetlib.io.NetInput;
+import lombok.EqualsAndHashCode;
 import lombok.Getter;
-import lombok.Setter;
-
-import java.io.IOException;
-import java.util.List;
+import lombok.RequiredArgsConstructor;
 
 /**
  * @author DaPorkchop_
  */
+@RequiredArgsConstructor
 @Getter
-@Setter
-public class Cube extends CubePos {
-    protected Section section;
-    protected List<CompoundTag> tileEntities;
-
-    public Cube(int x, int y, int z) {
-        super(x, y, z);
-    }
-
-    public Cube(NetInput in) throws IOException {
-        super(in);
-    }
-
-    public CubePos pos()    {
-        return this;
-    }
+@EqualsAndHashCode
+public class ColumnPos {
+    protected final int x;
+    protected final int z;
 }

@@ -40,6 +40,7 @@ import com.github.steveice10.packetlib.packet.PacketProtocol;
 import lombok.Getter;
 import lombok.NonNull;
 import net.daporkchop.v2cc.Proxy;
+import net.daporkchop.v2cc.proxy.Player;
 import net.daporkchop.v2cc.proxy.ProxyProtocol;
 
 import java.util.concurrent.atomic.LongAdder;
@@ -99,7 +100,7 @@ public class VServer extends Server implements ServerListener, ServerInfoBuilder
 
     @Override
     public void sessionAdded(SessionAddedEvent event) {
-        event.getSession().addListener(new VSessionListener(event.getSession().getFlag(FLAG_PLAYER)));
+        event.getSession().addListener(event.getSession().<Player>getFlag(FLAG_PLAYER).serverListener());
     }
 
     @Override

@@ -42,8 +42,8 @@ public class CubicChunksProtocol extends AbstractForgeProtocol {
 
     @Override
     protected void registerPackets() {
-        this.registerIncoming(0, CubesPacket.class);
-        this.registerIncoming(1, ColumnPacket.class);
+        this.registerIncoming(0, CubesPacket.class, new CubesPacket.Handler());
+        this.registerIncoming(1, ColumnPacket.class, new ColumnPacket.Handler());
         this.registerIncoming(2, UnloadColumnPacket.class);
         this.registerIncoming(3, UnloadCubePacket.class);
         this.registerIncoming(4, CubeBlockChangePacket.class);

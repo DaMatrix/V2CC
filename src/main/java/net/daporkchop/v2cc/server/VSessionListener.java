@@ -23,16 +23,24 @@ package net.daporkchop.v2cc.server;
 import com.github.steveice10.mc.protocol.ServerListener;
 import com.github.steveice10.mc.protocol.data.handshake.HandshakeIntent;
 import com.github.steveice10.mc.protocol.packet.handshake.client.HandshakePacket;
+import com.github.steveice10.mc.protocol.packet.ingame.client.ClientKeepAlivePacket;
 import com.github.steveice10.mc.protocol.packet.login.client.LoginStartPacket;
+import com.github.steveice10.mc.protocol.packet.login.server.LoginSuccessPacket;
 import com.github.steveice10.packetlib.event.session.ConnectedEvent;
 import com.github.steveice10.packetlib.event.session.DisconnectedEvent;
 import com.github.steveice10.packetlib.event.session.DisconnectingEvent;
 import com.github.steveice10.packetlib.event.session.PacketReceivedEvent;
 import com.github.steveice10.packetlib.event.session.PacketSendingEvent;
 import com.github.steveice10.packetlib.event.session.PacketSentEvent;
+import com.github.steveice10.packetlib.event.session.SessionEvent;
+import com.github.steveice10.packetlib.packet.Packet;
+import lombok.Getter;
 import lombok.NonNull;
 import lombok.RequiredArgsConstructor;
 import net.daporkchop.v2cc.proxy.Player;
+
+import java.util.ArrayList;
+import java.util.List;
 
 import static net.daporkchop.v2cc.util.Constants.*;
 
@@ -44,8 +52,15 @@ public class VSessionListener extends ServerListener {
     @NonNull
     protected final Player player;
 
+    protected final List<Packet> sendQueue = new ArrayList<>();
+
+    @Getter
+    protected boolean blocked = true;
+
     @Override
     public void packetReceived(PacketReceivedEvent event) {
+        LOG.debug("vanilla received packet: %s", event.<Packet>getPacket());
+
         if (event.getPacket() instanceof HandshakePacket) {
             if (((HandshakePacket) event.getPacket()).getIntent() == HandshakeIntent.LOGIN) {
                 //TODO: check for \0FML\0 host suffix and serve as a plain network proxy if the player is forge
@@ -57,15 +72,23 @@ public class VSessionListener extends ServerListener {
         } else if (event.getPacket() instanceof LoginStartPacket) {
             this.player.packetLoginStart(event.getPacket());
             this.player.createClientAndConnect();
+        } else { //forward packet to backend
+            if(!(event.getPacket() instanceof ClientKeepAlivePacket))
+                this.player.clientSession().send(event.getPacket());
         }
     }
 
     @Override
     public void packetSending(PacketSendingEvent event) {
+        if (event.getPacket() instanceof LoginSuccessPacket)    {
+            LOG.debug("vanilla unblocking");
+            this.unblock();
+        }
     }
 
     @Override
     public void packetSent(PacketSentEvent event) {
+        LOG.debug("vanilla sent packet: %s", event.<Packet>getPacket());
     }
 
     @Override
@@ -78,7 +101,7 @@ public class VSessionListener extends ServerListener {
 
     @Override
     public void disconnected(DisconnectedEvent event) {
-        if (event.getCause() != null)   {
+        if (event.getCause() != null) {
             LOG.alert("vanilla disconnecting", event.getCause());
             if (this.player.clientSession() != null) {
                 this.player.clientSession().disconnect(event.getReason(), event.getCause());
@@ -89,5 +112,15 @@ public class VSessionListener extends ServerListener {
                 this.player.clientSession().disconnect(event.getReason());
             }
         }
+    }
+
+    public void block() {
+        this.blocked = true;
+    }
+
+    public void unblock() {
+        this.blocked = false;
+        this.sendQueue.forEach(this.player.serverSession()::send);
+        this.sendQueue.clear();
     }
 }

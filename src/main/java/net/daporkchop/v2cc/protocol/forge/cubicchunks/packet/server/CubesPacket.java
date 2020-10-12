@@ -32,6 +32,7 @@ import lombok.AccessLevel;
 import lombok.AllArgsConstructor;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
+import lombok.NonNull;
 import lombok.Setter;
 import net.daporkchop.lib.math.vector.i.Vec3i;
 import net.daporkchop.lib.unsafe.PUnsafe;
@@ -40,7 +41,9 @@ import net.daporkchop.v2cc.protocol.PluginProtocol;
 import net.daporkchop.v2cc.protocol.forge.cubicchunks.CubicChunksProtocol;
 import net.daporkchop.v2cc.protocol.forge.cubicchunks.data.Cube;
 import net.daporkchop.v2cc.protocol.forge.cubicchunks.data.CubePos;
+import net.daporkchop.v2cc.proxy.Player;
 import net.daporkchop.v2cc.util.Constants;
+import net.daporkchop.v2cc.util.PacketHandler;
 
 import java.io.IOException;
 import java.util.ArrayList;
@@ -169,5 +172,12 @@ public class CubesPacket extends PluginPacket {
     @Override
     public PluginProtocol getProtocol() {
         return CubicChunksProtocol.INSTANCE;
+    }
+
+    public static class Handler implements PacketHandler<CubesPacket>   {
+        @Override
+        public void handle(@NonNull Player player, @NonNull CubesPacket packet) {
+            packet.cubes().forEach(player::putCube);
+        }
     }
 }

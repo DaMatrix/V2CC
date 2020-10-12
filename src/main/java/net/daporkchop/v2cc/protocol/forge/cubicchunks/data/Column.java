@@ -20,21 +20,22 @@
 
 package net.daporkchop.v2cc.protocol.forge.cubicchunks.data;
 
-import io.netty.buffer.ByteBuf;
 import lombok.Getter;
-import lombok.NonNull;
-import lombok.RequiredArgsConstructor;
 import lombok.Setter;
 
 /**
  * @author DaPorkchop_
  */
-@RequiredArgsConstructor
 @Getter
 @Setter
-public class Column {
-    protected final int x;
-    protected final int z;
-
+public class Column extends ColumnPos {
     protected final byte[] biomes = new byte[256];
+
+    public Column(int x, int z) {
+        super(x, z);
+    }
+
+    public ColumnPos pos() {
+        return this;
+    }
 }

@@ -20,6 +20,7 @@
 
 package net.daporkchop.v2cc.util;
 
+import com.github.steveice10.mc.protocol.data.game.chunk.Section;
 import lombok.NonNull;
 import lombok.experimental.UtilityClass;
 import net.daporkchop.lib.logging.LogAmount;
@@ -41,7 +42,7 @@ public class Constants {
 
     public static final Logger LOG = Logging.logger
             .redirectStdOut()
-            //.setLogAmount(LogAmount.DEBUG)
+            .setLogAmount(LogAmount.DEBUG)
             .enableANSI();
 
     public static final String FLAG_PLAYER = "v2cc_player";
@@ -53,6 +54,8 @@ public class Constants {
             "FORGE",
             "cubicchunks"
     ));
+
+    public static final Section[] EMPTY_CHUNK_SECTION_ARRAY = new Section[16];
 
     public <T> T unsafe_call(@NonNull Callable<T> function) {
         try {

@@ -108,6 +108,7 @@ public enum FMLHSClientHandlerChain implements ChainedPacketHandler {
             checkArg(packet.phase() == ServerHandshakeAckPacket.State.COMPLETE, packet.phase());
 
             player.clientSession().send(new ClientHandshakeAckPacket(ClientHandshakeAckPacket.State.COMPLETE));
+            player.serverListener().unblock();
             return DONE;
         }
     },

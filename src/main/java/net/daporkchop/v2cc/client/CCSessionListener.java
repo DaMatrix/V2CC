@@ -27,8 +27,11 @@ import com.github.steveice10.mc.protocol.data.SubProtocol;
 import com.github.steveice10.mc.protocol.data.handshake.HandshakeIntent;
 import com.github.steveice10.mc.protocol.packet.handshake.client.HandshakePacket;
 import com.github.steveice10.mc.protocol.packet.ingame.client.ClientPluginMessagePacket;
+import com.github.steveice10.mc.protocol.packet.ingame.server.ServerKeepAlivePacket;
 import com.github.steveice10.mc.protocol.packet.ingame.server.ServerPluginMessagePacket;
 import com.github.steveice10.mc.protocol.packet.login.client.LoginStartPacket;
+import com.github.steveice10.mc.protocol.packet.login.server.LoginSetCompressionPacket;
+import com.github.steveice10.mc.protocol.packet.login.server.LoginSuccessPacket;
 import com.github.steveice10.packetlib.event.session.ConnectedEvent;
 import com.github.steveice10.packetlib.event.session.DisconnectedEvent;
 import com.github.steveice10.packetlib.event.session.PacketReceivedEvent;
@@ -42,15 +45,19 @@ import com.github.steveice10.packetlib.tcp.io.ByteBufNetOutput;
 import io.netty.buffer.ByteBuf;
 import io.netty.buffer.ByteBufAllocator;
 import io.netty.buffer.Unpooled;
+import lombok.Getter;
 import lombok.NonNull;
 import lombok.RequiredArgsConstructor;
 import net.daporkchop.v2cc.protocol.PluginProtocol;
 import net.daporkchop.v2cc.protocol.PluginProtocols;
+import net.daporkchop.v2cc.protocol.forge.fmlhs.packet.client.ClientHandshakeAckPacket;
 import net.daporkchop.v2cc.proxy.Player;
 import net.daporkchop.v2cc.proxy.ProxyProtocol;
 import net.daporkchop.v2cc.util.PacketHandler;
 
 import java.io.IOException;
+import java.util.ArrayList;
+import java.util.List;
 
 import static net.daporkchop.v2cc.util.Constants.*;
 
@@ -61,6 +68,11 @@ import static net.daporkchop.v2cc.util.Constants.*;
 public class CCSessionListener extends ClientListener {
     @NonNull
     protected final Player player;
+
+    protected final List<Packet> sendQueue = new ArrayList<>();
+
+    @Getter
+    protected boolean blocked = true;
 
     @Override
     public void packetReceived(PacketReceivedEvent event) {
@@ -85,15 +97,24 @@ public class CCSessionListener extends ClientListener {
             }
         }
 
-        LOG.debug("cc received packet: %s", pck);
-
         if (handler != null) {
+            LOG.debug("cc handling packet: %s", pck);
             handler.handle(this.player, pck);
+        } else if (!this.player.serverListener().blocked() && !(pck instanceof LoginSetCompressionPacket || pck instanceof LoginSuccessPacket || pck instanceof ServerKeepAlivePacket)) {
+            LOG.debug("cc forwarding packet: %s", pck);
+            this.player.serverSession().send(pck);
+        } else {
+            LOG.debug("cc received packet: %s", pck);
         }
     }
 
     @Override
     public void packetSending(PacketSendingEvent event) {
+        if (event.getPacket() instanceof ClientHandshakeAckPacket && ((ClientHandshakeAckPacket) event.getPacket()).phase() == ClientHandshakeAckPacket.State.COMPLETE) {
+            LOG.debug("cc unblocking");
+            this.blocked = false;
+        }
+
         //check if the packet is a plugin message and if so, encode it as such
         this.player.pluginChannels().forEach((channel, protocol) -> {
             if (protocol.hasOutgoing(event.getPacket().getClass())) {
